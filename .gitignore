@@ -1,0 +1,75 @@
+# ======================
+# macOS
+# ======================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# ======================
+# Windows
+# ======================
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ======================
+# Android / Gradle
+# ======================
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+# Generated folders
+bin/
+gen/
+out/
+build/
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Local SDK path (OS-specific)
+local.properties
+
+# ======================
+# Android Studio / IntelliJ
+# ======================
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Native build cache
+.cxx/
+.externalNativeBuild/
+
+# Logs
+*.log
+
+# ======================
+# FTC SDK specific
+# ======================
+# Build output
+FtcRobotController/build/
+TeamCode/build/
+
+# OnBot Java
+onbot/java/
+
+# ======================
+# Misc
+# ======================
+tmp/
+temp/
+
