@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import org.firstinspires.ftc.teamcode.Teleop.calcDistance;
+import org.firstinspires.ftc.teamcode.TeleOp.calcDistance;
 
 @TeleOp(name = "Goon TeleOp")
 public class goon extends LinearOpMode {
