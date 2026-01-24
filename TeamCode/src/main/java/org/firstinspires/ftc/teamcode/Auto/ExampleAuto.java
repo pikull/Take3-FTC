@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Auto;
  // make sure this aligns with class location
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -14,9 +16,6 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Autonomous(name = "Example Auto", group = "Examples")
 
 public class ExampleAuto extends OpMode {
-    public PathChain Path10;
-    public PathChain Path2;
-    public PathChain Path3;
     private Follower follower;
     private Timer pathTime,opmodeTimer;
 
@@ -27,10 +26,10 @@ public class ExampleAuto extends OpMode {
         SHOOT_LOAD
     }
     PathState pathState;
-    private final Pose startPose = new Pose(120.4173913043478, 119.16521739130434, Math.toRadians(45));
-    private final Pose shootPos = new Pose(107.99130434782609, 107.0086956521739, Math.toRadians(53));
-    private final Pose preloadPos1 = new Pose(100.75652173913043,83.51304347826087,Math.toRadians(90));
-    private final Pose loadPos1 = new Pose(121.33913043478262,83.50434782608696);
+    private final Pose startPose = new Pose(120, 119, Math.toRadians(45));
+    private final Pose shootPos = new Pose(107, 107, Math.toRadians(53));
+    private final Pose preloadPos1 = new Pose(100,83,Math.toRadians(90));
+    private final Pose loadPos1 = new Pose(121,83);
 
     private PathChain driveStartShoot;
     private PathChain shootPreload1;
@@ -41,38 +40,26 @@ public class ExampleAuto extends OpMode {
         driveStartShoot = follower.pathBuilder()
                 .addPath(new BezierLine(startPose,shootPos))
                 .setLinearHeadingInterpolation(startPose.getHeading(),shootPos.getHeading())
-                .build();
-        shootPreload1 = follower.pathBuilder()
                 .addPath(new BezierLine(shootPos,preloadPos1))
                 .setLinearHeadingInterpolation(shootPos.getHeading(),preloadPos1.getHeading())
                 .build();
-        shootLoad1 = follower.pathBuilder()
-                .addPath(new BezierLine(preloadPos1,loadPos1))
-                .build();
+
     }
     public void statePathUpdate(){
         switch (pathState){
             case DRIVE_START_SHOOT_POS:
                 follower.followPath(driveStartShoot,true);
                 break;
-            case SHOOT_PRELOAD:
-               // if(!follower.isBusy()){
-                    telemetry.addLine("done");
-
+//            case SHOOT_PRELOAD:
+//               if(!follower.isBusy()){
+//                    telemetry.addLine("done");
+//
 //}
-                break;
-            case SHOOT_LOADING:
-//                if(!follower.isBusy()){
-//                    telemetry.addLine("done2");
-//
-//                }
-            case SHOOT_LOAD:
-//                if(!follower.isBusy()){
-//                    telemetry.addLine("done3");
-//
+
+
 //                }
                 default:
-                    //telemetry.addLine("error");
+                    telemetry.addLine("error");
                     break;
         }
     }
@@ -80,6 +67,7 @@ public class ExampleAuto extends OpMode {
 
     @Override
     public void init() {
+
         pathState = PathState.DRIVE_START_SHOOT_POS;
         pathTime = new Timer();
         opmodeTimer = new Timer();
@@ -88,6 +76,7 @@ public class ExampleAuto extends OpMode {
         follower.setPose(startPose);
     }
     public void start(){
+        follower.activateAllPIDFs();
         opmodeTimer.resetTimer();
         setPathState(pathState);
 

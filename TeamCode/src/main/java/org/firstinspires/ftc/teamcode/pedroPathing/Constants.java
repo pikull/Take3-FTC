@@ -10,17 +10,16 @@ import com.pedropathing.ftc.localization.constants.PinpointConstants;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.robotcore.hardware.DcMotorSimple; // Add this import
 
 public class Constants {
         public static FollowerConstants followerConstants = new FollowerConstants()
                         .mass(10.52334) // Your robot's weight in kilograms
-                        .forwardZeroPowerAcceleration(-44.035) // From the Forward Zero Power Tuner
-                        .lateralZeroPowerAcceleration(-82.049)
-                        .translationalPIDFCoefficients(new PIDFCoefficients(0.15,0,0.2,0.2))
-                        .headingPIDFCoefficients(new PIDFCoefficients(1.1,0,0.02,0.2))
+                        .forwardZeroPowerAcceleration(-42.035) // From the Forward Zero Power Tuner
+                        .lateralZeroPowerAcceleration(-80.049)
+                        .translationalPIDFCoefficients(new PIDFCoefficients(0.17,0,0.05,0.025))
+                        .headingPIDFCoefficients(new PIDFCoefficients(1.2,0,0.02,0.03))
                         .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.04,-0.001, 0.00001, 0.5,0.04))
                         .centripetalScaling(0.0005);
         // Define your Drivetrain Constants here
@@ -33,14 +32,13 @@ public class Constants {
                         .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
                         .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
                         .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-                        .xVelocity(78.337)
-                        .yVelocity(64.442)
-
+                        .xVelocity(75.337)
+                        .yVelocity(58.61)
         ;
 
         public static PathConstraints pathConstraints = new PathConstraints(0.99, 40,
                 1,
-                1);
+                0.5);
 
         public static PinpointConstants localizerConstants = new PinpointConstants()
                         .forwardPodY(-7.2)

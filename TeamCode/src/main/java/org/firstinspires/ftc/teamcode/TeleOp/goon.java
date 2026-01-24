@@ -10,11 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import org.firstinspires.ftc.teamcode.TeleOp.calcDistance;
-
 @TeleOp(name = "Goon TeleOp")
 public class goon extends LinearOpMode {
-
     // Hardware Components
     private DcMotor leftFront, leftBack, rightFront, rightBack;
     private DcMotorEx rightShooter, leftShooter;
@@ -22,7 +19,6 @@ public class goon extends LinearOpMode {
     private Servo outakeServo;
     private CRServo intakeServo;
     private Limelight3A limelight;
-
     // Constants
     private static final int FAR_SHOT_VELOCITY = 1500;
     private static final int CLOSE_SHOT_VELOCITY = 1118;
@@ -32,30 +28,23 @@ public class goon extends LinearOpMode {
     private static final double MAX_TURN_POWER = 0.5;
     private static final double DISTANCE_THRESHOLD = 80.0;
     private static final double ALIGNMENT_TOLERANCE = 1.0; // degrees
-
     // Variables
     private boolean intakePowerToggle = false;
     private double targetArea = 0;
-
     @Override
     public void runOpMode() throws InterruptedException {
         initializeHardware();
         configureLimelight();
-
         telemetry.addData("Status", "Initialized - Ready to Start");
         telemetry.update();
-
         waitForStart();
-
         if (isStopRequested()) return;
-
         while (opModeIsActive()) {
             updateLimelightTelemetry();
             handleGamepad2Controls();
             handleGamepad1Controls();
         }
     }
-
     /**
      * Initialize all hardware components
      */
@@ -187,19 +176,15 @@ public class goon extends LinearOpMode {
      */
     private void autoAlignToTarget() {
         LLResult result = limelight.getLatestResult();
-
         if (!result.isValid()) {
             telemetry.addData("Auto-Align", "No target found");
             return;
         }
-
         double targetX = result.getTx();
-
         // Continue aligning while target is not centered (outside tolerance)
         while (result.isValid() && Math.abs(targetX) > ALIGNMENT_TOLERANCE) {
             // Calculate proportional power based on distance from center
             double turnPower = calculateProportionalTurnPower(targetX);
-
             // Determine turn direction and apply power
             if (targetX > ALIGNMENT_TOLERANCE) {
                 // Turn right (target is to the right)
@@ -210,10 +195,8 @@ public class goon extends LinearOpMode {
                 setDrivePowers(0, 0, -turnPower);
                 telemetry.addData("Auto-Align", "Turning Left - TX: %.2f, Power: %.2f", targetX, turnPower);
             }
-
             telemetry.addData("Distance from Center", "%.2f degrees", Math.abs(targetX));
             telemetry.update();
-
             // Get updated result
             result = limelight.getLatestResult();
             if (result.isValid()) {
@@ -246,7 +229,8 @@ public class goon extends LinearOpMode {
             leftShooter.setVelocity(CLOSE_SHOT_VELOCITY);
             outakeServo.setPosition(OUTAKE_POSITION);
             telemetry.addData("Auto-Shoot", "Close Shot - Distance: %.1f", distance);
-        } else {
+        }
+        else {
             // Far shot
             rightShooter.setVelocity(FAR_SHOT_VELOCITY);
             leftShooter.setVelocity(FAR_SHOT_VELOCITY);
@@ -265,7 +249,6 @@ public class goon extends LinearOpMode {
         rightFront.setPower((forward - strafe - rotate) / denominator);
         rightBack.setPower((forward + strafe - rotate) / denominator);
     }
-
     /**
      * Calculate proportional turn power based on distance from target center
      * @param targetX The X offset from target center in degrees
