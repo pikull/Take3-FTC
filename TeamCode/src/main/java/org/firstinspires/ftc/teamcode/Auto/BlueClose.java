@@ -17,8 +17,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Autonomous(name = "Example Auto2")
-public class RedClose extends OpMode {
+@Autonomous(name = "Blue Close")
+public class BlueClose extends OpMode {
 
     CRServo intakeS;
     Servo outake;
