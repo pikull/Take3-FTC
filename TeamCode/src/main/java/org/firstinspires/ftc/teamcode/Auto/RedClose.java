@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.Auto; // make sure this aligns with class location
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -15,53 +13,54 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Example Auto2")
-public class auto2 extends OpMode {
+public class RedClose extends OpMode {
     CRServo intakeS;
     Servo outake;
     DcMotorEx rightShooter, leftShooter;
     DcMotor intake;
+    DistanceSensor sensorDistance;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
-
     private int pathState;
-    private final Pose startPose = new Pose(118.6, 119.2, Math.toRadians(45)); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(106.27826086956522, 95.68695652173913, Math.toRadians(53)); // Scoring Pose
-                                                                                                        // of our robot.
-                                                                                                        // It is facing
-                                                                                                        // the goal at a
-                                                                                                        // 135 degree
-                                                                                                        // angle.
-    private final Pose scoreShakePose = new Pose(106.27826086956522 - 3, 95.68695652173913 - 3, Math.toRadians(53)); // Shake
-                                                                                                                     // Pose
-    private final Pose pickup1Pose = new Pose(107.54782608695652, 84.62608695652175, Math.toRadians(0)); // Highest
-                                                                                                         // (First Set)
-                                                                                                         // of Artifacts
-                                                                                                         // from the
-                                                                                                         // Spike Mark.
-    private final Pose pickup2Pose = new Pose(100.86956521739131, 58.95652173913044, Math.toRadians(0)); // Middle
-                                                                                                         // (Second Set)
-                                                                                                         // of Artifacts
-                                                                                                         // from the
-                                                                                                         // Spike Mark.
-    private final Pose pickup3Pose = new Pose(105.25217391304349, 36.208695652173915, Math.toRadians(0)); // Lowest
-                                                                                                          // (Third Set)
-                                                                                                          // of
-                                                                                                          // Artifacts
-                                                                                                          // from the
-                                                                                                          // Spike Mark.
-
-    // Backup Poses (20 inches back in X)
-    private final Pose moveAfterPickup1Pose = new Pose(103.54782608695652 + 46, 84.62608695652175, Math.toRadians(0));
-    private final Pose moveAfterPickup2Pose = new Pose(100.86956521739131 + 46, 58.95652173913044, Math.toRadians(0));
-    private final Pose moveAfterPickup3Pose = new Pose(105.25217391304349 + 47, 36.208695652173915, Math.toRadians(0));
-
+    private final Pose startPose = new Pose(109.56521739130434, 109.35652173913039, Math.toRadians(45)); // Start Pose
+                                                                                                         // of our
+                                                                                                         // robot.
+    private final Pose scorePose = new Pose(92.93913043478265, 86, Math.toRadians(65)); // Scoring Pose
+    private final Pose scoreShakePose = new Pose(92.93913043478265 - 3, 86 - 3, Math.toRadians(65)); // Shake// Pose
+    private final Pose pickup1Pose = new Pose(92.4521739130435, 84.62608695652175, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(92.4521739130435, 63, Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose(92.4521739130435, 40, Math.toRadians(0));
+    private final Pose moveAfterPickup1Pose = new Pose(103.54782608695652 + 20, 84.62608695652175, Math.toRadians(0));
+    private final Pose moveAfterPickup2Pose = new Pose(100.86956521739131 + 20, 58.95652173913044, Math.toRadians(0));
+    private final Pose moveAfterPickup3Pose = new Pose(105.25217391304349 + 20, 36.208695652173915, Math.toRadians(0));
     private Path scorePreload;
     private PathChain grabPickup1, moveAfterPickup1, scorePickup1, grabPickup2, moveAfterPickup2, scorePickup2,
             grabPickup3, moveAfterPickup3, scorePickup3, scoreToShake, shakeToScore;
+
+    /** This method is called once at the init of the OpMode. **/
+    @Override
+    public void init() {
+        pathTimer = new Timer();
+        opmodeTimer = new Timer();
+        opmodeTimer.resetTimer();
+        intake = hardwareMap.get(DcMotor.class, "intake");
+        follower = Constants.createFollower(hardwareMap);
+        outake = hardwareMap.get(Servo.class, "outakeS");
+        intakeS = hardwareMap.get(CRServo.class, "intakeS");
+        outake.setPosition(0.7);
+        sensorDistance = hardwareMap.get(DistanceSensor.class, "colorSensor");
+        rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
+        leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
+        leftShooter.setDirection(DcMotorSimple.Direction.REVERSE);
+        intake.setDirection(DcMotor.Direction.REVERSE);
+        buildPaths();
+        follower.setStartingPose(startPose);
+    }
 
     public void buildPaths() {
         /*
@@ -70,12 +69,10 @@ public class auto2 extends OpMode {
          */
         scorePreload = new Path(new BezierLine(startPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
-
         /*
          * Here is an example for Constant Interpolation
          * scorePreload.setConstantInterpolation(startPose.getHeading());
          */
-
         /*
          * This is our grabPickup1 PathChain. We are using a single path with a
          * BezierLine, which is a straight line.
@@ -84,13 +81,11 @@ public class auto2 extends OpMode {
                 .addPath(new BezierLine(scorePose, pickup1Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
                 .build();
-
         /* Backup after pickup 1 */
         moveAfterPickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup1Pose, moveAfterPickup1Pose))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), moveAfterPickup1Pose.getHeading())
                 .build();
-
         /*
          * This is our scorePickup1 PathChain. We are using a single path with a
          * BezierLine, which is a straight line.
@@ -99,7 +94,6 @@ public class auto2 extends OpMode {
                 .addPath(new BezierLine(moveAfterPickup1Pose, scorePose))
                 .setLinearHeadingInterpolation(moveAfterPickup1Pose.getHeading(), scorePose.getHeading())
                 .build();
-
         /*
          * This is our grabPickup2 PathChain. We are using a single path with a
          * BezierLine, which is a straight line.
@@ -108,13 +102,11 @@ public class auto2 extends OpMode {
                 .addPath(new BezierLine(scorePose, pickup2Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
                 .build();
-
         /* Backup after pickup 2 */
         moveAfterPickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup2Pose, moveAfterPickup2Pose))
                 .setLinearHeadingInterpolation(pickup2Pose.getHeading(), moveAfterPickup2Pose.getHeading())
                 .build();
-
         /*
          * This is our scorePickup2 PathChain. We are using a single path with a
          * BezierLine, which is a straight line.
@@ -123,7 +115,6 @@ public class auto2 extends OpMode {
                 .addPath(new BezierLine(moveAfterPickup2Pose, scorePose))
                 .setLinearHeadingInterpolation(moveAfterPickup2Pose.getHeading(), scorePose.getHeading())
                 .build();
-
         /*
          * This is our grabPickup3 PathChain. We are using a single path with a
          * BezierLine, which is a straight line.
@@ -132,7 +123,6 @@ public class auto2 extends OpMode {
                 .addPath(new BezierLine(scorePose, pickup3Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup3Pose.getHeading())
                 .build();
-
         /* Backup after pickup 3 */
         moveAfterPickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup3Pose, moveAfterPickup3Pose))
@@ -147,13 +137,11 @@ public class auto2 extends OpMode {
                 .addPath(new BezierLine(moveAfterPickup3Pose, scorePose))
                 .setLinearHeadingInterpolation(moveAfterPickup3Pose.getHeading(), scorePose.getHeading())
                 .build();
-
         /* Shake Paths */
         scoreToShake = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, scoreShakePose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), scoreShakePose.getHeading())
                 .build();
-
         shakeToScore = follower.pathBuilder()
                 .addPath(new BezierLine(scoreShakePose, scorePose))
                 .setLinearHeadingInterpolation(scoreShakePose.getHeading(), scorePose.getHeading())
@@ -165,8 +153,8 @@ public class auto2 extends OpMode {
             case 0:
                 follower.followPath(scorePreload);
                 intake.setPower(1);
-                rightShooter.setVelocity(1110);
-                leftShooter.setVelocity(1110);
+                rightShooter.setVelocity(1125);
+                leftShooter.setVelocity(1125);
                 outake.setPosition(0.18);
                 setPathState(1);
                 break;
@@ -188,6 +176,7 @@ public class auto2 extends OpMode {
                     /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
                     intakeS.setPower(-0.2);
+
                     setPathState(21);
                 }
                 break;
@@ -196,6 +185,7 @@ public class auto2 extends OpMode {
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
                     intakeS.setPower(-0.2); // Keep running
+
                     setPathState(22);
                 }
                 break;
@@ -215,7 +205,8 @@ public class auto2 extends OpMode {
             case 12:
                 /* Wait State */
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeS.setPower(-0.1); // Stop feed
+                    intakeS.setPower(-0.2); // Stop feed
+
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     /*
@@ -253,8 +244,8 @@ public class auto2 extends OpMode {
                      */
                     follower.followPath(scorePickup1, true);
                     // intakeS.setPower(1); // START REMOVED
-                    rightShooter.setVelocity(1110);
-                    leftShooter.setVelocity(1110);
+                    rightShooter.setVelocity(1125);
+                    leftShooter.setVelocity(1125);
                     outake.setPosition(0.18);
                     setPathState(4);
                 }
@@ -270,6 +261,7 @@ public class auto2 extends OpMode {
                     /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
                     intakeS.setPower(-0.2);
+
                     setPathState(23);
                 }
                 break;
@@ -278,6 +270,7 @@ public class auto2 extends OpMode {
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
                     intakeS.setPower(-0.2); // Keep running
+
                     setPathState(24);
                 }
                 break;
@@ -331,8 +324,8 @@ public class auto2 extends OpMode {
                      */
                     follower.followPath(scorePickup2, true);
                     // intakeS.setPower(1); // START REMOVED
-                    rightShooter.setVelocity(1110);
-                    leftShooter.setVelocity(1110);
+                    rightShooter.setVelocity(1125);
+                    leftShooter.setVelocity(1125);
                     outake.setPosition(0.18);
                     setPathState(7);
                 }
@@ -348,6 +341,7 @@ public class auto2 extends OpMode {
                     /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
                     intakeS.setPower(-0.2);
+
                     setPathState(25);
                 }
                 break;
@@ -356,6 +350,7 @@ public class auto2 extends OpMode {
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
                     intakeS.setPower(-0.2); // Keep running
+
                     setPathState(26);
                 }
                 break;
@@ -409,8 +404,8 @@ public class auto2 extends OpMode {
                      */
                     follower.followPath(scorePickup3, true);
                     // intakeS.setPower(1); // START REMOVED
-                    rightShooter.setVelocity(1110);
-                    leftShooter.setVelocity(1110);
+                    rightShooter.setVelocity(1125);
+                    leftShooter.setVelocity(1125);
                     outake.setPosition(0.18);
                     setPathState(10);
                 }
@@ -424,6 +419,7 @@ public class auto2 extends OpMode {
                     /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
                     intakeS.setPower(-0.2);
+
                     setPathState(27);
                 }
                 break;
@@ -432,6 +428,7 @@ public class auto2 extends OpMode {
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
                     intakeS.setPower(-0.2); // Keep running
+
                     setPathState(28);
                 }
                 break;
@@ -459,7 +456,6 @@ public class auto2 extends OpMode {
                 break;
         }
     }
-
     /**
      * These change the states of the paths and actions. It will also reset the
      * timers of the individual switches
@@ -468,7 +464,6 @@ public class auto2 extends OpMode {
         pathState = pState;
         pathTimer.resetTimer();
     }
-
     /**
      * This is the main loop of the OpMode, it will run repeatedly after clicking
      * "Play".
@@ -479,40 +474,18 @@ public class auto2 extends OpMode {
         // order to work
         follower.update();
         autonomousPathUpdate();
-
         // Feedback to Driver Hub for debugging
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
+
+        // Safety Override: If object is within 5cm, reverse intakeS
+        if (sensorDistance.getDistance(DistanceUnit.CM) < 5) {
+            intakeS.setPower(-1);
+        }
+
         telemetry.update();
-    }
-
-    /** This method is called once at the init of the OpMode. **/
-    @Override
-    public void init() {
-
-        pathTimer = new Timer();
-        opmodeTimer = new Timer();
-        opmodeTimer.resetTimer();
-        intake = hardwareMap.get(DcMotor.class, "intake");
-        follower = Constants.createFollower(hardwareMap);
-        outake = hardwareMap.get(Servo.class, "outakeS");
-        intakeS = hardwareMap.get(CRServo.class, "intakeS");
-        outake.setPosition(0.7);
-        rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
-        leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
-        leftShooter.setDirection(DcMotorSimple.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.REVERSE);
-
-        buildPaths();
-        follower.setStartingPose(startPose);
-
-    }
-
-    /** This method is called continuously after Init while waiting for "play". **/
-    @Override
-    public void init_loop() {
     }
 
     /**
@@ -522,13 +495,7 @@ public class auto2 extends OpMode {
      **/
     @Override
     public void start() {
-
         opmodeTimer.resetTimer();
         setPathState(0);
-    }
-
-    /** We do not use this because everything should automatically disable **/
-    @Override
-    public void stop() {
     }
 }
