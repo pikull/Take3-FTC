@@ -17,9 +17,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Autonomous(name = "Blue Close")
+@Autonomous(name = "Example")
 public class BlueClose extends OpMode {
-
     CRServo intakeS;
     Servo outake;
     DcMotorEx rightShooter, leftShooter;
@@ -28,24 +27,22 @@ public class BlueClose extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private final Pose startPose = new Pose(144 - 109.56521739130434, 109.35652173913039, Math.toRadians(180 - 45)); // Start Pose
+    private final Pose startPose = new Pose(144-109.56521739130434, 109.35652173913039, Math.toRadians(135)); // Start Pose
     // of our
     // robot.
-    private final Pose scorePose = new Pose(144 - 92.93913043478265, 86, Math.toRadians(180 - 65)); // Scoring Pose
-    private final Pose scoreShakePose = new Pose(144 - 92.93913043478265 - 3, 86 - 3, Math.toRadians(180 - 65)); // Shake// Pose
-    private final Pose pickup1Pose = new Pose(144 - 92.4521739130435, 84.62608695652175, Math.toRadians(180 - 0));
-    private final Pose pickup2Pose = new Pose(144 - 92.4521739130435, 63, Math.toRadians(180 - 0));
-    private final Pose pickup3Pose = new Pose(144 - 92.4521739130435, 40, Math.toRadians(180 - 0));
-    private final Pose moveAfterPickup1Pose = new Pose(144 - 103.54782608695652 + 20, 84.62608695652175, Math.toRadians(180 - 0));
-    private final Pose moveAfterPickup2Pose = new Pose(144 - 100.86956521739131 + 20, 58.95652173913044, Math.toRadians(180 - 0));
-    private final Pose moveAfterPickup3Pose = new Pose(144 - 105.25217391304349 + 20, 36.208695652173915, Math.toRadians(180 - 0));
+    private final Pose scorePose = new Pose(144-92.93913043478265, 86, Math.toRadians(180-65)); // Scoring Pose
+    private final Pose scoreShakePose = new Pose(144-92.93913043478265 - 3, 86 - 3, Math.toRadians(180-65)); // Shake// Pose
+    private final Pose pickup1Pose = new Pose(144-92.4521739130435, 84.62608695652175, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(144-92.4521739130435, 63, Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose(144-92.4521739130435, 40, Math.toRadians(0));
+    private final Pose moveAfterPickup1Pose = new Pose(144-103.54782608695652 - 20, 84.62608695652175, Math.toRadians(0));
+    private final Pose moveAfterPickup2Pose = new Pose(144-100.86956521739131 - 20, 58.95652173913044, Math.toRadians(0));
+    private final Pose moveAfterPickup3Pose = new Pose(144-105.25217391304349 - 20, 36.208695652173915, Math.toRadians(0));
     private Path scorePreload;
     private PathChain grabPickup1, moveAfterPickup1, scorePickup1, grabPickup2, moveAfterPickup2, scorePickup2,
             grabPickup3, moveAfterPickup3, scorePickup3, scoreToShake, shakeToScore;
 
-    /**
-     * This method is called once at the init of the OpMode. *
-     */
+    /** This method is called once at the init of the OpMode. **/
     @Override
     public void init() {
         pathTimer = new Timer();
@@ -76,7 +73,7 @@ public class BlueClose extends OpMode {
          * Here is an example for Constant Interpolation
          * scorePreload.setConstantInterpolation(startPose.getHeading());
          */
- /*
+        /*
          * This is our grabPickup1 PathChain. We are using a single path with a
          * BezierLine, which is a straight line.
          */
@@ -169,14 +166,14 @@ public class BlueClose extends OpMode {
                  * - Robot Position: "if(follower.getPose().getX() > 36) {}"
                  */
 
- /*
+                /*
                  * This case checks the robot's position and will wait until the robot position
                  * is close (1 inch away) from the scorePose's position
                  */
                 if (!follower.isBusy()) {
                     /* Score Preload */
 
- /* Shake Sequence */
+                    /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
                     intakeS.setPower(-0.2);
 
@@ -225,14 +222,14 @@ public class BlueClose extends OpMode {
                  * This case checks the robot's position and will wait until the robot position
                  * is close (1 inch away) from the pickup1Pose's position
                  */
- /*
+                /*
                  * This case checks the robot's position and will wait until the robot position
                  * is close (1 inch away) from the pickup1Pose's position
                  */
                 if (!follower.isBusy()) {
                     /* Grab Sample */
 
- /* Backup after grab */
+                    /* Backup after grab */
                     follower.followPath(moveAfterPickup1, true);
                     intake.setPower(1);
                     setPathState(3);
@@ -261,7 +258,7 @@ public class BlueClose extends OpMode {
                 if (!follower.isBusy()) {
                     /* Score Sample */
 
- /* Shake Sequence */
+                    /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
                     intakeS.setPower(-0.2);
 
@@ -312,7 +309,7 @@ public class BlueClose extends OpMode {
                 if (!follower.isBusy()) {
                     /* Grab Sample */
 
- /* Backup after grab */
+                    /* Backup after grab */
                     follower.followPath(moveAfterPickup2, true);
                     intake.setPower(1);
                     setPathState(6);
@@ -341,7 +338,7 @@ public class BlueClose extends OpMode {
                 if (!follower.isBusy()) {
                     /* Score Sample */
 
- /* Shake Sequence */
+                    /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
                     intakeS.setPower(-0.2);
 
@@ -392,7 +389,7 @@ public class BlueClose extends OpMode {
                 if (!follower.isBusy()) {
                     /* Grab Sample */
 
- /* Backup after grab */
+                    /* Backup after grab */
                     follower.followPath(moveAfterPickup3, true);
                     intake.setPower(1);
                     setPathState(9);
@@ -459,22 +456,18 @@ public class BlueClose extends OpMode {
                 break;
         }
     }
-
     /**
      * These change the states of the paths and actions. It will also reset the
      * timers of the individual switches
-     *
-     */
+     **/
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
     }
-
     /**
-     * This is the main loop of the OpMode, it will run repeatedly after
-     * clicking "Play".
-     *
-     */
+     * This is the main loop of the OpMode, it will run repeatedly after clicking
+     * "Play".
+     **/
     @Override
     public void loop() {
         // These loop the movements of the robot, these must be called continuously in
@@ -496,10 +489,10 @@ public class BlueClose extends OpMode {
     }
 
     /**
-     * This method is called once at the start of the OpMode. It runs all the
-     * setup actions, including building paths and starting the path system
-     *
-     */
+     * This method is called once at the start of the OpMode.
+     * It runs all the setup actions, including building paths and starting the path
+     * system
+     **/
     @Override
     public void start() {
         opmodeTimer.resetTimer();
