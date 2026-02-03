@@ -83,7 +83,7 @@ public class goon extends LinearOpMode {
             // }
             updateLimelightTelemetry();
             handleGamepad2Controls();
-            handleGamepad1Controls(0.25);
+            handleGamepad1Controls(0.4);
             // intakeServo.setPower(0); // REMOVED to allow logic in
             // updateLimelightTelemetry to control servo
         }
@@ -236,7 +236,7 @@ public class goon extends LinearOpMode {
         }
 
         // Auto-Align to Target (Y Button)
-        if (gamepad2.yWasReleased())
+        if (gamepad1.yWasReleased())
             autoAlignToTarget();
         // if(gamepad2.y){
         // if(result.isValid()&&result.getTx()!=0){
@@ -245,7 +245,7 @@ public class goon extends LinearOpMode {
         // }
 
         // Auto-Shoot (X Button)
-        if (gamepad2.right_bumper) {
+        if (gamepad1.right_bumper) {
             autoShoot();
         }
 
