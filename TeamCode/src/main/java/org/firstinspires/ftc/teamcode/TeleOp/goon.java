@@ -83,7 +83,7 @@ public class goon extends LinearOpMode {
             // }
             updateLimelightTelemetry();
             handleGamepad2Controls();
-            handleGamepad1Controls(1);
+            handleGamepad1Controls(0.25);
             // intakeServo.setPower(0); // REMOVED to allow logic in
             // updateLimelightTelemetry to control servo
         }
