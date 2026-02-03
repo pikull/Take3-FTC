@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode.Auto; // make sure this aligns with class location
+package org.firstinspires.ftc.teamcode.Auto;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -13,164 +14,214 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Red FAHH")
 public class RedFAHH extends OpMode {
 
-    CRServo intakeS;
-    Servo outake, safety;
-    DcMotorEx rightShooter, leftShooter;
-    DcMotor intake;
-    DistanceSensor sensorDistance;
     private Follower follower;
-    private Timer pathTimer, actionTimer, opmodeTimer;
+    private Timer pathTimer, actionTimer;
+    private ElapsedTime opmodeTimer;
     private int pathState;
+    private boolean isHardStopActive = false;
 
-    /* Define Poses */
-    private final Pose startPose = new Pose(144 - 56, 8, Math.toRadians(180 - 90));
-    private final Pose beforePickupPose = new Pose(144 - 40, 8, Math.toRadians(180 - 180));
-    private final Pose pickupPose = new Pose(144 - 9, 8, Math.toRadians(180 - 180));
-    private final Pose scorePose = new Pose(144 - 56, 8, Math.toRadians(180 - 112));
-    private Path scorePreload;
-    private PathChain beforeGrabPickup, grabPickup, scorePickup;
-    
-    /**
-     * This method is called once at the init of the OpMode. *
-     */
-    @Override
-    public void init() {
-        pathTimer = new Timer();
-        opmodeTimer = new Timer();
-        opmodeTimer.resetTimer();
-        intake = hardwareMap.get(DcMotor.class, "intake");
-        follower = Constants.createFollower(hardwareMap);
-        outake = hardwareMap.get(Servo.class, "outakeS");
-        safety = hardwareMap.get(Servo.class, "safety");
-        intakeS = hardwareMap.get(CRServo.class, "intakeS");
-        outake.setPosition(0.7);
-        safety.setPosition(0.35);
-        sensorDistance = hardwareMap.get(DistanceSensor.class, "colorSensor");
-        rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
-        leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
-        leftShooter.setDirection(DcMotorSimple.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.REVERSE);
-        buildPaths();
-        follower.setStartingPose(startPose);
-    }
+    // Hardware
+    private DcMotorEx rightShooter, leftShooter;
+    private DcMotor intake;
+    private Servo outake, safety;
+    private CRServo intakeS;
+
+    // Poses
+    private final Pose startPose = new Pose(80, 8, Math.toRadians(270));
+    private final Pose pickup1Pose = new Pose(126.54782608695655, 28.391304347826104, Math.toRadians(270));
+    private final Pose pickup2Pose = new Pose(127.9391304347826, 7.513043478260874, Math.toRadians(270));
+    // 5 inches backward in Y (270 heading means -Y is forward, so +Y is backward)
+    private final Pose pickup2BackPose = new Pose(127.9391304347826, 12.513043478260874, Math.toRadians(270));
+
+    // Paths
+    private Path startToPickup1;
+    private Path pickup1To2;
+    private Path pickup2Back;
+    private Path pickup2To1;
 
     public void buildPaths() {
-        scorePreload = new Path(new BezierLine(startPose, scorePose));
-        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
+        // Start -> Pickup 1
+        startToPickup1 = new Path(new BezierLine(startPose, pickup1Pose));
+        startToPickup1.setLinearHeadingInterpolation(startPose.getHeading(), pickup1Pose.getHeading());
 
-        beforeGrabPickup = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, beforePickupPose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), beforePickupPose.getHeading())
-                .build();
-        grabPickup = follower.pathBuilder()
-                .addPath(new BezierLine(beforePickupPose, pickupPose))
-                .setLinearHeadingInterpolation(beforePickupPose.getHeading(), pickupPose.getHeading())
-                .build();
-        scorePickup = follower.pathBuilder()
-                .addPath(new BezierLine(pickupPose, scorePose))
-                .setLinearHeadingInterpolation(pickupPose.getHeading(), scorePose.getHeading())
-                .build();
+        // Pickup 1 -> Pickup 2
+        pickup1To2 = new Path(new BezierLine(pickup1Pose, pickup2Pose));
+        pickup1To2.setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup2Pose.getHeading());
+
+        // Pickup 2 -> Pickup 2 Back
+        pickup2Back = new Path(new BezierLine(pickup2Pose, pickup2BackPose));
+        pickup2Back.setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup2BackPose.getHeading());
+
+        // Pickup 2 Back -> Pickup 1
+        pickup2To1 = new Path(new BezierLine(pickup2BackPose, new Pose(65, 8)));
+        pickup2To1.setLinearHeadingInterpolation(pickup2BackPose.getHeading(), Math.toRadians(70));
     }
-
 
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                // preload scoring
-                follower.followPath(scorePreload);
+                // Move to Pickup 1
+                follower.followPath(startToPickup1);
+                setPathState(1);
+                break;
             case 1:
-                // set motors (the effective start for loops)
-                intake.setPower(1);
-                rightShooter.setVelocity(0);
-                leftShooter.setVelocity(0);
-                outake.setPosition(0.27);
-                safety.setPosition(0.35)
-                setPathState(2);
+                // Arrive at Pickup 1
+                if (!follower.isBusy()) {
+                    // Start Intake
+                    intake.setPower(1);
+                    actionTimer.resetTimer();
+
+                    // Lower velocity for Pickup 2
+                    follower.setMaxPower(0.5);
+
+                    // Move to Pickup 2
+                    follower.followPath(pickup1To2);
+                    setPathState(2);
+                }
                 break;
             case 2:
-                // premove for pickup
+                // Arrive at Pickup 2
                 if (!follower.isBusy()) {
-                    follower.followPath(beforeGrabPickup, true);
-                    setPathState(3);
-                }
-                break;
-            case 3:
-                // move to pickup
-                if (!follower.isBusy()) {
-                    follower.followPath(grabPickup, true);
-                    setPathState(4);
-                }
-                break;
-            case 4:
-                // come back to shoot
-                if (!follower.isBusy()) {
-                    follower.followPath(scorePickup, true);
+                    // Reset velocity to full power
+                    follower.setMaxPower(1.0);
+
+                    // Backup
+                    follower.followPath(pickup2Back);
                     setPathState(5);
                 }
                 break;
             case 5:
-                // shoot
+                // Finished Backup
                 if (!follower.isBusy()) {
+                    // Loop back to Pickup 1
+                    follower.followPath(pickup2To1);
                     rightShooter.setVelocity(1500);
                     leftShooter.setVelocity(1500);
-                    outake.setPosition(0.27);
-                    safety.setPosition(0);
-                    intake.setPower(1);
-                    setPathState(1);
+                    setPathState(3);
                 }
                 break;
+            case 3:
+                // Arrive back at Pickup 1
+                if (!follower.isBusy()) {
+                    // Start Shooters
+
+
+                    // Move safety servo out of the way
+                    safety.setPosition(0.5);
+
+                    // Reset timer so we wait starting from the moment we arrive
+
+                        setPathState(4);
+                    intakeS.setPower(1);
+                    intake.setPower(1);
+                    outake.setPosition(0.67);
+                    setPathState(-1);
+
+                }
+                break;
+
+
+
+                    // Stop
+        }
     }
 
-    /**
-     * These change the states of the paths and actions. It will also reset the
-     * timers of the individual switches
-     *
-     */
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
     }
 
-    /**
-     * This is the main loop of the OpMode, it will run repeatedly after
-     * clicking "Play".
-     *
-     */
     @Override
     public void loop() {
-        // These loop the movements of the robot, these must be called continuously in
-        // order to work
+        // Hard Stop Logic
+        if (opmodeTimer.seconds() > 27 && !isHardStopActive) {
+            isHardStopActive = true;
+
+            // Stop all mechanisms
+            if (intake != null)
+                intake.setPower(0);
+            if (intakeS != null)
+                intakeS.setPower(0);
+            if (rightShooter != null)
+                rightShooter.setVelocity(0);
+            if (leftShooter != null)
+                leftShooter.setVelocity(0);
+
+            // Calculate forward pose (10 inches approx)
+            Pose currentPose = follower.getPose();
+            double heading = currentPose.getHeading();
+            double forwardDistance = 10.0;
+
+            double targetX = currentPose.getX() + forwardDistance * Math.cos(heading);
+            double targetY = currentPose.getY() + forwardDistance * Math.sin(heading);
+
+            Pose targetPose = new Pose(targetX, targetY, heading);
+
+            // Create and follow path
+            Path hardStopPath = new Path(new BezierLine(currentPose, targetPose));
+            hardStopPath.setLinearHeadingInterpolation(heading, heading);
+            follower.followPath(hardStopPath, true);
+        }
+
         follower.update();
-        autonomousPathUpdate();
-        // Feedback to Driver Hub for debugging
+
+        if (!isHardStopActive) {
+            autonomousPathUpdate();
+
+            // Intake timeout (runs for only 3 seconds)
+            if (actionTimer.getElapsedTimeSeconds() > 3) {
+                intake.setPower(0);
+                intakeS.setPower(0);
+            }
+        }
+
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
-
-        // Safety Override: If object is within 5cm, reverse intakeS
-        if (sensorDistance.getDistance(DistanceUnit.CM) < 5) {
-            intakeS.setPower(-1);
-        }
-
+        telemetry.addData("Time", opmodeTimer.seconds());
         telemetry.update();
     }
 
-    /**
-     * This method is called once at the start of the OpMode. It runs all the
-     * setup actions, including building paths and starting the path system
-     *
-     */
+    @Override
+    public void init() {
+        pathTimer = new Timer();
+        actionTimer = new Timer();
+        opmodeTimer = new ElapsedTime();
+        opmodeTimer.reset();
+
+        // Initialize Hardware (Referencing RedClose, minus Safety)
+        intake = hardwareMap.get(DcMotor.class, "intake");
+        outake = hardwareMap.get(Servo.class, "outakeS");
+        intakeS = hardwareMap.get(CRServo.class, "intakeS");
+        outake.setPosition(0.7);
+        // Safety Servo Removed
+        rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
+        leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
+        rightShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        safety = hardwareMap.get(Servo.class, "safety");
+        safety.setPosition(0.2);
+
+        // Directions
+        rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
+        intake.setDirection(DcMotor.Direction.REVERSE);
+
+        follower = Constants.createFollower(hardwareMap);
+        buildPaths();
+        follower.setStartingPose(startPose);
+    }
+
     @Override
     public void start() {
-        opmodeTimer.resetTimer();
+        opmodeTimer.reset();
         setPathState(0);
     }
 }

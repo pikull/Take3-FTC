@@ -8,9 +8,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class servoreset extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        Servo left = hardwareMap.get(Servo.class, "leftPark");
-        Servo right = hardwareMap.get(Servo.class, "rightPark");
+
         Servo intake = hardwareMap.get(Servo.class, "outakeS");
+        CRServo intakeS = hardwareMap.get(CRServo.class, "intakeS");
+
         telemetry.addData("Status", "Initialized - Ready to Start");
         telemetry.update();
         waitForStart();
@@ -27,8 +28,9 @@ public class servoreset extends LinearOpMode {
                 telemetry.addData("pos",intake.getPosition());
                 telemetry.update();
             }
-           left.setPosition(0.5);
-           right.setPosition(0.5);
+            intakeS.setPower(1);
+            telemetry.update();
+
 
         }
     }

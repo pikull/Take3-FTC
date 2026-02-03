@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
+
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
+
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -16,16 +16,17 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "Goon ")
+@TeleOp(name = "Goon Teleop")
 public class goon extends LinearOpMode {
-    // Hardware Components//////////////////////////////////////////////////////////////////////////
-    DistanceSensor sensorDistance;
+    // Hardware
+    // Components//////////////////////////////////////////////////////////////////////////
+
     ElapsedTime intakeTimer;
     ElapsedTime shooterButtonTimer;
     private DcMotor leftFront, leftBack, rightFront, rightBack;
     private DcMotorEx rightShooter, leftShooter;
-    private DcMotor intake;
-    private Servo outakeServo ,safety;//parkRight,parkLeft;
+    private DcMotorEx intake;
+    private Servo outakeServo, safety;// parkRight,parkLeft;
     private CRServo intakeServo;
     private Limelight3A limelight;
     private Follower follower;
@@ -42,16 +43,18 @@ public class goon extends LinearOpMode {
     // Variables////////////////////////////////////////////////////////////////////////////////////
     private boolean intakePowerToggle = false;
     private double targetArea = 0;
-   // private double previousDistance = 100.0;
-    //private double peakDistance = 0.0;
-   // private boolean isReverseMode = false;
+    // private double previousDistance = 100.0;
+    // private double peakDistance = 0.0;
+    // private boolean isReverseMode = false;
     private boolean shooterButtonPressed = false;
     // New variables for simplified control
     private boolean isInReverseSequence = false;
     private ElapsedTime reverseTimer;
     private boolean intervalIncreasing = false;
     private ElapsedTime intervalTimer;
-    LLResult result = limelight.getLatestResult();
+    private LLResult result;
+    private int rightBumperNum;
+
     @Override
     public void runOpMode() throws InterruptedException {
         initializeHardware();
@@ -62,14 +65,22 @@ public class goon extends LinearOpMode {
         if (isStopRequested())
             return;
         while (opModeIsActive()) {
-//            if(gamepad2.dpad_up){
-//                parkRight.setPosition(1);
-//                parkLeft.setPosition(1);
-//            }
-//            if(gamepad2.dpad_down){
-//                parkRight.setPosition(0);
-//                parkLeft.setPosition(0);
-//            }
+            if (gamepad1.right_bumper) {
+                intake.setPower(-1);
+
+            }
+
+            // Intake Reverse (Left Bumper)
+            if (gamepad1.leftBumperWasReleased())
+                intake.setPower(1.0);
+            // if(gamepad2.dpad_up){
+            // parkRight.setPosition(1);
+            // parkLeft.setPosition(1);
+            // }
+            // if(gamepad2.dpad_down){
+            // parkRight.setPosition(0);
+            // parkLeft.setPosition(0);
+            // }
             updateLimelightTelemetry();
             handleGamepad2Controls();
             handleGamepad1Controls(1);
@@ -77,6 +88,7 @@ public class goon extends LinearOpMode {
             // updateLimelightTelemetry to control servo
         }
     }
+
     /**
      * Initialize all hardware components
      */
@@ -90,30 +102,34 @@ public class goon extends LinearOpMode {
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
         leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
         // Intake System
-        intake = hardwareMap.dcMotor.get("intake");
+        intake = hardwareMap.get(DcMotorEx.class,"intake");
         safety = hardwareMap.servo.get("safety");
         outakeServo = hardwareMap.servo.get("outakeS");
         intakeServo = hardwareMap.get(CRServo.class, "intakeS");
         // Park Servos
-//        parkRight = hardwareMap.servo.get("parkRight");
-//        parkLeft = hardwareMap.servo.get("parkLeft");
+        // parkRight = hardwareMap.servo.get("parkRight");
+        // parkLeft = hardwareMap.servo.get("parkLeft");
         // Configure Motor Directions
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.REVERSE);
         leftShooter.setDirection(DcMotorSimple.Direction.REVERSE);
-//        parkRight.setDirection(Servo.Direction.REVERSE);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // parkRight.setDirection(Servo.Direction.REVERSE);
         // Configure Encoders
         rightShooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftShooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftShooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightShooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intake.setDirection(DcMotorEx.Direction.REVERSE);
+
         // Set Zero Power Behavior
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // Initialize Powers
         intake.setPower(0);
         outakeServo.setPosition(0.76);
-        //sensorDistance = hardwareMap.get(DistanceSensor.class, "colorSensor");
+
         intakeTimer = new ElapsedTime();
         intakeTimer.reset();
         shooterButtonTimer = new ElapsedTime();
@@ -125,6 +141,7 @@ public class goon extends LinearOpMode {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(0, 0, 0));
     }
+
     /**
      * CONFIGURE
      * LIMELIGHT//////////////////////////////////////////////////////////////////////////
@@ -143,23 +160,33 @@ public class goon extends LinearOpMode {
         // Default pipeline
         limelight.start();
     }
+
     /**
      * UPDATE LIMELIGHT TELEMETRY AND CODE FOR THE INTAKE
      * SERVO/////////////////////////////////////
      */
     private void updateLimelightTelemetry() {
+        result = limelight.getLatestResult();
         LLStatus status = limelight.getStatus();
         telemetry.addData("Limelight Status", status.getName());
         telemetry.addData("Temperature", "%.1f°C", status.getTemp());
         telemetry.addData("CPU Usage", "%.1f%%", status.getCpu());
         telemetry.addData("FPS", "%d", (int) status.getFps());
-        telemetry.addData("Distance", sensorDistance.getDistance(DistanceUnit.CM));
+
         // Intake Control Logic - Simplified shooter-based control
         boolean isShooting = Math.abs(rightShooter.getVelocity()) > 500 || Math.abs(leftShooter.getVelocity()) > 500;
-        double currentDistance = sensorDistance.getDistance(DistanceUnit.CM);
-        
-        if(isShooting){
+
+        if (isShooting) {
             handleGamepad1Controls(0.5);
+            safety.setPosition(.5);
+            intake.setPower(1);
+        } else {
+            safety.setPosition(0.2);
+
+            if(intake.getVelocity()<80&&intakeTimer.milliseconds()>2000) {
+                intake.setPower(0);
+            }
+            intakeTimer.reset();
         }
         if (result.isValid()) {
             double tx = result.getTx();
@@ -169,6 +196,7 @@ public class goon extends LinearOpMode {
         }
         telemetry.update();
     }
+
     /**
      * GAMEPAD 1
      * CONTORLS///////////////////////////////////////////////////////////////////////////
@@ -190,19 +218,9 @@ public class goon extends LinearOpMode {
         rightFront.setPower(frontRightPower);
         rightBack.setPower(backRightPower);
 
-        if (gamepad1.rightBumperWasReleased()&& !intakePowerToggle) {
-            intake.setPower(1);
-            intakePowerToggle = true;
-                //previousDistance = sensorDistance.getDistance(DistanceUnit.CM);
-        }
-        if(gamepad1.rightBumperWasReleased() && intakePowerToggle){
-            intake.setPower(0);
-            intakePowerToggle = false;
-        }
-        // Intake Reverse (Left Bumper)
-        if (gamepad1.leftBumperWasReleased())
-            intake.setPower(-1.0);
+
     }
+
     /**
      * GAMEPAD 2
      * CONTROLS////////////////////////////////////////////////////////////////////////////
@@ -220,17 +238,16 @@ public class goon extends LinearOpMode {
         // Auto-Align to Target (Y Button)
         if (gamepad2.yWasReleased())
             autoAlignToTarget();
-//        if(gamepad2.y){
-//            if(result.isValid()&&result.getTx()!=0){
-//                gamepad2.rumble(100);
-//            }
-//        }
+        // if(gamepad2.y){
+        // if(result.isValid()&&result.getTx()!=0){
+        // gamepad2.rumble(100);
+        // }
+        // }
 
         // Auto-Shoot (X Button)
-        if (gamepad2.right_bumper){
+        if (gamepad2.right_bumper) {
             autoShoot();
         }
-
 
         if (gamepad2.a) {
             rightShooter.setVelocity(0);
@@ -238,6 +255,7 @@ public class goon extends LinearOpMode {
             intake.setPower(0);
         }
     }
+
     /**
      * Auto-align robot to target using Limelight with proportional power control
      * Power ranges from MIN_TURN_POWER (0.25) to MAX_TURN_POWER (0.5) based on
@@ -279,6 +297,7 @@ public class goon extends LinearOpMode {
         telemetry.addData("Auto-Align", "Target Centered - TX: %.2f", targetX);
         telemetry.update();
     }
+
     /**
      * Auto-shoot based on distance to target
      */
@@ -308,10 +327,12 @@ public class goon extends LinearOpMode {
             outakeServo.setPosition(OUTAKE_FAR_POSITION);
             telemetry.addData("Auto-Shoot", "Far Shot - Distance: %.1f", distance);
         }
-        if(gamepad2.rightBumperWasReleased()&&rightShooter.getVelocity()>CLOSE_SHOT_VELOCITY-100 && leftShooter.getVelocity()>CLOSE_SHOT_VELOCITY-100){
+        if (gamepad2.rightBumperWasReleased() && rightShooter.getVelocity() > CLOSE_SHOT_VELOCITY - 100
+                && leftShooter.getVelocity() > CLOSE_SHOT_VELOCITY - 100) {
             intakeServo.setPower(1.0);
         }
     }
+
     /**
      * Set drive motor powers for mecanum drive
      */
@@ -322,6 +343,7 @@ public class goon extends LinearOpMode {
         rightFront.setPower((forward - strafe - rotate) / denominator);
         rightBack.setPower((forward + strafe - rotate) / denominator);
     }
+
     /**
      * Calculate proportional turn power based on distance from target center
      * 

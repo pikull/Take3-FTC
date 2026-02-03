@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple; // Add this import
 
 public class Constants {
         public static FollowerConstants followerConstants = new FollowerConstants()
-                        .mass(10.52334) // Your robot's weight in kilograms
+                        .mass(10.4) // Your robot's weight in kilograms
                         .forwardZeroPowerAcceleration(-42.035) // From the Forward Zero Power Tuner
                         .lateralZeroPowerAcceleration(-80.049)
                         .translationalPIDFCoefficients(new PIDFCoefficients(0.17,0,0.05,0.025))
@@ -41,8 +41,8 @@ public class Constants {
                 0.5);
 
         public static PinpointConstants localizerConstants = new PinpointConstants()
-                        .forwardPodY(-7.2)
-                        .strafePodX(3.43524)
+                        .forwardPodY(-9.2)
+                        .strafePodX(-4.43524)
                         .distanceUnit(DistanceUnit.INCH)
                         .hardwareMapName("pinpoint")
                         .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
