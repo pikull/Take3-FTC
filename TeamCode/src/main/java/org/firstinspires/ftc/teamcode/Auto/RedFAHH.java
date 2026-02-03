@@ -93,20 +93,20 @@ public class RedFAHH extends OpMode {
 
                     // Backup
                     follower.followPath(pickup2Back);
-                    setPathState(5);
+                    setPathState(3);
                 }
                 break;
-            case 5:
+            case 3:
                 // Finished Backup
                 if (!follower.isBusy()) {
                     // Loop back to Pickup 1
                     follower.followPath(pickup2To1);
                     rightShooter.setVelocity(1500);
                     leftShooter.setVelocity(1500);
-                    setPathState(3);
+                    setPathState(4);
                 }
                 break;
-            case 3:
+            case 4:
                 // Arrive back at Pickup 1
                 if (!follower.isBusy()) {
                     // Start Shooters
@@ -117,7 +117,6 @@ public class RedFAHH extends OpMode {
 
                     // Reset timer so we wait starting from the moment we arrive
 
-                        setPathState(4);
                     intakeS.setPower(1);
                     intake.setPower(1);
                     outake.setPosition(0.67);
