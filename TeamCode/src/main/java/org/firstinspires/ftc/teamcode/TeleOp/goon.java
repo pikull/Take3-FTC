@@ -271,6 +271,12 @@ public class goon extends LinearOpMode {
             leftShooter.setVelocity(1500);
         }
 
+        if (gamepad2.left_bumperWasPressed()) {
+            rightShooter.setVelocity(-1500);
+            leftShooter.setVelocity(-1500);
+            intake.setPower(-1);
+        }
+
         
     }
 
