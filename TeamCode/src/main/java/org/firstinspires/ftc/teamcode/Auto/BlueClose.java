@@ -21,6 +21,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class BlueClose extends OpMode {
     CRServo intakeS;
     Servo outake;
+    Servo safety;
     DcMotorEx rightShooter, leftShooter;
     DcMotor intake;
     DistanceSensor sensorDistance;
@@ -53,6 +54,7 @@ public class BlueClose extends OpMode {
         outake = hardwareMap.get(Servo.class, "outakeS");
         intakeS = hardwareMap.get(CRServo.class, "intakeS");
         outake.setPosition(0.7);
+        safety = hardwareMap.get(Servo.class, "safety");
         sensorDistance = hardwareMap.get(DistanceSensor.class, "colorSensor");
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
         leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
@@ -441,6 +443,7 @@ public class BlueClose extends OpMode {
             case 19:
                 /* Verify Velocity */
                 if (rightShooter.getVelocity() > 1000) {
+                    safety.setPosition(0.5);
                     intakeS.setPower(1);
                     setPathState(20);
                 }
@@ -448,6 +451,7 @@ public class BlueClose extends OpMode {
             case 20:
                 /* Wait State */
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
+                    safety.setPosition(0.2);
                     intakeS.setPower(0); // Stop feed
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
