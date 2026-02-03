@@ -38,12 +38,17 @@ public class RedFAHH extends OpMode {
     private final Pose pickup2Pose = new Pose(127.9391304347826, 7.513043478260874, Math.toRadians(270));
     // 5 inches backward in Y (270 heading means -Y is forward, so +Y is backward)
     private final Pose pickup2BackPose = new Pose(127.9391304347826, 12.513043478260874, Math.toRadians(270));
+    private final Pose secondPrePickupPose = new Pose(88, 35, Math.toRadians(0)); // chnage this to be closer to balls
+    private final Pose secondPickupPose = new Pose(120, 35, Math.toRadians(0));
 
     // Paths
     private Path startToPickup1;
     private Path pickup1To2;
     private Path pickup2Back;
     private Path pickup2To1;
+    private Path shootToSecondPrePickup;
+    private Path secondPrePickupToSecondPickup;
+    private Path secondPickupTostart;
 
     public void buildPaths() {
         // Start -> Pickup 1
@@ -61,6 +66,8 @@ public class RedFAHH extends OpMode {
         // Pickup 2 Back -> Pickup 1
         pickup2To1 = new Path(new BezierLine(pickup2BackPose, new Pose(65, 8)));
         pickup2To1.setLinearHeadingInterpolation(pickup2BackPose.getHeading(), Math.toRadians(70));
+
+        //
     }
 
     public void autonomousPathUpdate() {
