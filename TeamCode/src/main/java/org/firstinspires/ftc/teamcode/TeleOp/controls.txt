@@ -1,0 +1,13 @@
+current:
+gamepad 1:
+    left stick = move
+    right stick = turn
+    right bumper = intake on
+    left bumper = intake reverse
+    dpad up = limelight pipeline 0
+    dpad down = limelight pipeline 2
+
+gamepad 2:
+    right bumper = auto shoot button timer
+    Y = auto align to target
+    right
