@@ -19,26 +19,30 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Example")
 public class BlueClose extends OpMode {
-    CRServo intakeS;
-    Servo outake;
-    Servo safety;
-    DcMotorEx rightShooter, leftShooter;
-    DcMotor intake;
-    DistanceSensor sensorDistance;
+    private CRServo intakeServo;
+    private Servo outtakeServo;
+    private Servo safety;
+    private DcMotorEx rightShooter, leftShooter;
+    private DcMotorEx intake;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private final Pose startPose = new Pose(144-109.56521739130434, 109.35652173913039, Math.toRadians(135)); // Start Pose
+    private final Pose startPose = new Pose(144 - 109.56521739130434, 109.35652173913039, Math.toRadians(135)); // Start
+                                                                                                                // Pose
     // of our
     // robot.
-    private final Pose scorePose = new Pose(144-92.93913043478265, 86, Math.toRadians(180-65)); // Scoring Pose
-    private final Pose scoreShakePose = new Pose(144-92.93913043478265 - 3, 86 - 3, Math.toRadians(180-65)); // Shake// Pose
-    private final Pose pickup1Pose = new Pose(144-92.4521739130435, 84.62608695652175, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(144-92.4521739130435, 63, Math.toRadians(0));
-    private final Pose pickup3Pose = new Pose(144-92.4521739130435, 40, Math.toRadians(0));
-    private final Pose moveAfterPickup1Pose = new Pose(144-103.54782608695652 - 20, 84.62608695652175, Math.toRadians(0));
-    private final Pose moveAfterPickup2Pose = new Pose(144-100.86956521739131 - 20, 58.95652173913044, Math.toRadians(0));
-    private final Pose moveAfterPickup3Pose = new Pose(144-105.25217391304349 - 20, 36.208695652173915, Math.toRadians(0));
+    private final Pose scorePose = new Pose(144 - 92.93913043478265, 86, Math.toRadians(180 - 65)); // Scoring Pose
+    private final Pose scoreShakePose = new Pose(144 - 92.93913043478265 - 3, 86 - 3, Math.toRadians(180 - 65)); // Shake//
+                                                                                                                 // Pose
+    private final Pose pickup1Pose = new Pose(144 - 92.4521739130435, 84.62608695652175, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(144 - 92.4521739130435, 63, Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose(144 - 92.4521739130435, 40, Math.toRadians(0));
+    private final Pose moveAfterPickup1Pose = new Pose(144 - 103.54782608695652 - 20, 84.62608695652175,
+            Math.toRadians(0));
+    private final Pose moveAfterPickup2Pose = new Pose(144 - 100.86956521739131 - 20, 58.95652173913044,
+            Math.toRadians(0));
+    private final Pose moveAfterPickup3Pose = new Pose(144 - 105.25217391304349 - 20, 36.208695652173915,
+            Math.toRadians(0));
     private Path scorePreload;
     private PathChain grabPickup1, moveAfterPickup1, scorePickup1, grabPickup2, moveAfterPickup2, scorePickup2,
             grabPickup3, moveAfterPickup3, scorePickup3, scoreToShake, shakeToScore;
@@ -49,17 +53,16 @@ public class BlueClose extends OpMode {
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
-        intake = hardwareMap.get(DcMotor.class, "intake");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
         follower = Constants.createFollower(hardwareMap);
-        outake = hardwareMap.get(Servo.class, "outakeS");
-        intakeS = hardwareMap.get(CRServo.class, "intakeS");
-        outake.setPosition(0.7);
+        outtakeServo = hardwareMap.get(Servo.class, "outakeS");
+        intakeServo = hardwareMap.get(CRServo.class, "intakeS");
+        outtakeServo.setPosition(0.7);
         safety = hardwareMap.get(Servo.class, "safety");
-        sensorDistance = hardwareMap.get(DistanceSensor.class, "colorSensor");
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
         leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
         leftShooter.setDirection(DcMotorSimple.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.REVERSE);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
         buildPaths();
         follower.setStartingPose(startPose);
     }
@@ -157,7 +160,7 @@ public class BlueClose extends OpMode {
                 intake.setPower(1);
                 rightShooter.setVelocity(1125);
                 leftShooter.setVelocity(1125);
-                outake.setPosition(0.18);
+                outtakeServo.setPosition(0.18);
                 setPathState(1);
                 break;
             case 1:
@@ -177,7 +180,7 @@ public class BlueClose extends OpMode {
 
                     /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
-                    intakeS.setPower(-0.2);
+                    intakeServo.setPower(-0.2);
 
                     setPathState(21);
                 }
@@ -186,7 +189,7 @@ public class BlueClose extends OpMode {
                 /* Shake Out Complete */
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
-                    intakeS.setPower(-0.2); // Keep running
+                    intakeServo.setPower(-0.2); // Keep running
 
                     setPathState(22);
                 }
@@ -200,14 +203,14 @@ public class BlueClose extends OpMode {
             case 11:
                 /* Verify Velocity */
                 if (rightShooter.getVelocity() > 1000) {
-                    intakeS.setPower(1);
+                    intakeServo.setPower(1);
                     setPathState(12);
                 }
                 break;
             case 12:
                 /* Wait State */
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeS.setPower(-0.2); // Stop feed
+                    intakeServo.setPower(-0.2); // Stop feed
 
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
@@ -248,7 +251,7 @@ public class BlueClose extends OpMode {
                     // intakeS.setPower(1); // START REMOVED
                     rightShooter.setVelocity(1125);
                     leftShooter.setVelocity(1125);
-                    outake.setPosition(0.18);
+                    outtakeServo.setPosition(0.18);
                     setPathState(4);
                 }
                 break;
@@ -262,7 +265,7 @@ public class BlueClose extends OpMode {
 
                     /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
-                    intakeS.setPower(-0.2);
+                    intakeServo.setPower(-0.2);
 
                     setPathState(23);
                 }
@@ -271,7 +274,7 @@ public class BlueClose extends OpMode {
                 /* Shake Out Complete */
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
-                    intakeS.setPower(-0.2); // Keep running
+                    intakeServo.setPower(-0.2); // Keep running
 
                     setPathState(24);
                 }
@@ -285,14 +288,14 @@ public class BlueClose extends OpMode {
             case 13:
                 /* Verify Velocity */
                 if (rightShooter.getVelocity() > 1000) {
-                    intakeS.setPower(1);
+                    intakeServo.setPower(1);
                     setPathState(14);
                 }
                 break;
             case 14:
                 /* Wait State */
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeS.setPower(-0.1); // Stop feed
+                    intakeServo.setPower(-0.1); // Stop feed
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     /*
@@ -328,7 +331,7 @@ public class BlueClose extends OpMode {
                     // intakeS.setPower(1); // START REMOVED
                     rightShooter.setVelocity(1125);
                     leftShooter.setVelocity(1125);
-                    outake.setPosition(0.18);
+                    outtakeServo.setPosition(0.18);
                     setPathState(7);
                 }
                 break;
@@ -342,7 +345,7 @@ public class BlueClose extends OpMode {
 
                     /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
-                    intakeS.setPower(-0.2);
+                    intakeServo.setPower(-0.2);
 
                     setPathState(25);
                 }
@@ -351,7 +354,7 @@ public class BlueClose extends OpMode {
                 /* Shake Out Complete */
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
-                    intakeS.setPower(-0.2); // Keep running
+                    intakeServo.setPower(-0.2); // Keep running
 
                     setPathState(26);
                 }
@@ -365,14 +368,14 @@ public class BlueClose extends OpMode {
             case 16:
                 /* Verify Velocity */
                 if (rightShooter.getVelocity() > 1000) {
-                    intakeS.setPower(1);
+                    intakeServo.setPower(1);
                     setPathState(17);
                 }
                 break;
             case 17:
                 /* Wait State */
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeS.setPower(-0.1); // Stop feed
+                    intakeServo.setPower(-0.1); // Stop feed
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     /*
@@ -408,7 +411,7 @@ public class BlueClose extends OpMode {
                     // intakeS.setPower(1); // START REMOVED
                     rightShooter.setVelocity(1125);
                     leftShooter.setVelocity(1125);
-                    outake.setPosition(0.18);
+                    outtakeServo.setPosition(0.18);
                     setPathState(10);
                 }
                 break;
@@ -420,7 +423,7 @@ public class BlueClose extends OpMode {
                 if (!follower.isBusy()) {
                     /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
-                    intakeS.setPower(-0.2);
+                    intakeServo.setPower(-0.2);
 
                     setPathState(27);
                 }
@@ -429,7 +432,7 @@ public class BlueClose extends OpMode {
                 /* Shake Out Complete */
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
-                    intakeS.setPower(-0.2); // Keep running
+                    intakeServo.setPower(-0.2); // Keep running
 
                     setPathState(28);
                 }
@@ -444,7 +447,7 @@ public class BlueClose extends OpMode {
                 /* Verify Velocity */
                 if (rightShooter.getVelocity() > 1000) {
                     safety.setPosition(0.2);
-                    intakeS.setPower(1);
+                    intakeServo.setPower(1);
                     setPathState(20);
                 }
                 break;
@@ -452,7 +455,7 @@ public class BlueClose extends OpMode {
                 /* Wait State */
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
                     safety.setPosition(0.5);
-                    intakeS.setPower(0); // Stop feed
+                    intakeServo.setPower(-0.1);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     setPathState(-1);
@@ -460,6 +463,7 @@ public class BlueClose extends OpMode {
                 break;
         }
     }
+
     /**
      * These change the states of the paths and actions. It will also reset the
      * timers of the individual switches
@@ -468,6 +472,7 @@ public class BlueClose extends OpMode {
         pathState = pState;
         pathTimer.resetTimer();
     }
+
     /**
      * This is the main loop of the OpMode, it will run repeatedly after clicking
      * "Play".
@@ -483,11 +488,6 @@ public class BlueClose extends OpMode {
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
-
-        // Safety Override: If object is within 5cm, reverse intakeS
-        if (sensorDistance.getDistance(DistanceUnit.CM) < 5) {
-            intakeS.setPower(-1);
-        }
 
         telemetry.update();
     }

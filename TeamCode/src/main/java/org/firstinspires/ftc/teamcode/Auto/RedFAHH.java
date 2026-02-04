@@ -28,12 +28,13 @@ public class RedFAHH extends OpMode {
 
     // Hardware
     private DcMotorEx rightShooter, leftShooter;
-    private DcMotor intake;
-    private Servo outake, safety;
-    private CRServo intakeS;
+    private DcMotorEx intake;
+    private Servo outtakeServo, safety;
+    private CRServo intakeServo;
 
     // Poses
-    private final Pose startPose = new Pose(80, 8, Math.toRadians(270));
+    private final Pose startPose = new Pose(80, 8, Math.toRadians(90));
+    private final Pose shoot1Pose = new Pose(80, 8, Math.toRadians(70));
     private final Pose pickup1Pose = new Pose(126.54782608695655, 28.391304347826104, Math.toRadians(270));
     private final Pose pickup2Pose = new Pose(127.9391304347826, 7.513043478260874, Math.toRadians(270));
     // 5 inches backward in Y (270 heading means -Y is forward, so +Y is backward)
@@ -42,6 +43,7 @@ public class RedFAHH extends OpMode {
     private final Pose secondPickupPose = new Pose(120, 35, Math.toRadians(0));
 
     // Paths
+    private Path startToShoot1;
     private Path startToPickup1;
     private Path pickup1To2;
     private Path pickup2Back;
@@ -51,9 +53,13 @@ public class RedFAHH extends OpMode {
     private Path secondPickupToStart;
 
     public void buildPaths() {
+        // Start -> Shoot 1 (Rotation)
+        startToShoot1 = new Path(new BezierLine(startPose, shoot1Pose));
+        startToShoot1.setLinearHeadingInterpolation(startPose.getHeading(), shoot1Pose.getHeading());
+
         // Start -> Pickup 1
-        startToPickup1 = new Path(new BezierLine(startPose, pickup1Pose));
-        startToPickup1.setLinearHeadingInterpolation(startPose.getHeading(), pickup1Pose.getHeading());
+        startToPickup1 = new Path(new BezierLine(shoot1Pose, pickup1Pose));
+        startToPickup1.setLinearHeadingInterpolation(shoot1Pose.getHeading(), pickup1Pose.getHeading());
 
         // Pickup 1 -> Pickup 2
         pickup1To2 = new Path(new BezierLine(pickup1Pose, pickup2Pose));
@@ -73,9 +79,40 @@ public class RedFAHH extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                // Move to Pickup 1
-                follower.followPath(startToPickup1);
-                setPathState(1);
+                // Rotate to Shoot 1
+                follower.followPath(startToShoot1);
+                setPathState(10);
+                break;
+            case 10:
+                // Arrive at Shoot 1
+                if (!follower.isBusy()) {
+                    // Start Shooters
+                    rightShooter.setVelocity(1500);
+                    leftShooter.setVelocity(1500);
+
+                    // Move safety servo out of the way
+                    safety.setPosition(0.5);
+
+                    setPathState(11);
+                }
+                break;
+            case 11:
+                // Wait for wind up, then feed
+                if (pathTimer.getElapsedTimeSeconds() > 1.0) {
+                    intake.setPower(1);
+                    intakeServo.setPower(1);
+                    outtakeServo.setPosition(0.67);
+                    actionTimer.resetTimer();
+                    setPathState(12);
+                }
+                break;
+            case 12:
+                // Wait for shot to clear, then move to pickup 1
+                if (pathTimer.getElapsedTimeSeconds() > 1.0) {
+                    // Start moving to Pickup 1
+                    follower.followPath(startToPickup1);
+                    setPathState(1);
+                }
                 break;
             case 1:
                 // Arrive at Pickup 1
@@ -118,23 +155,20 @@ public class RedFAHH extends OpMode {
                 if (!follower.isBusy()) {
                     // Start Shooters
 
-
                     // Move safety servo out of the way
                     safety.setPosition(0.5);
 
                     // Reset timer so we wait starting from the moment we arrive
 
-                    intakeS.setPower(1);
+                    intakeServo.setPower(1);
                     intake.setPower(1);
-                    outake.setPosition(0.67);
+                    outtakeServo.setPosition(0.67);
                     setPathState(-1);
 
                 }
                 break;
 
-
-
-                    // Stop
+            // Stop
         }
     }
 
@@ -152,8 +186,8 @@ public class RedFAHH extends OpMode {
             // Stop all mechanisms
             if (intake != null)
                 intake.setPower(0);
-            if (intakeS != null)
-                intakeS.setPower(0);
+            if (intakeServo != null)
+                intakeServo.setPower(0);
             if (rightShooter != null)
                 rightShooter.setVelocity(0);
             if (leftShooter != null)
@@ -183,7 +217,7 @@ public class RedFAHH extends OpMode {
             // Intake timeout (runs for only 3 seconds)
             if (actionTimer.getElapsedTimeSeconds() > 3) {
                 intake.setPower(0);
-                intakeS.setPower(0);
+                intakeServo.setPower(-0.1);
             }
         }
 
@@ -202,12 +236,12 @@ public class RedFAHH extends OpMode {
         opmodeTimer = new ElapsedTime();
         opmodeTimer.reset();
 
-        // Initialize Hardware (Referencing RedClose, minus Safety)
-        intake = hardwareMap.get(DcMotor.class, "intake");
-        outake = hardwareMap.get(Servo.class, "outakeS");
-        intakeS = hardwareMap.get(CRServo.class, "intakeS");
-        outake.setPosition(0.7);
-        // Safety Servo Removed
+        // Initialize Hardware
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
+        outtakeServo = hardwareMap.get(Servo.class, "outakeS");
+        intakeServo = hardwareMap.get(CRServo.class, "intakeS");
+        outtakeServo.setPosition(0.7);
+
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
         leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
         rightShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -218,7 +252,7 @@ public class RedFAHH extends OpMode {
 
         // Directions
         rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.REVERSE);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
         follower = Constants.createFollower(hardwareMap);
         buildPaths();

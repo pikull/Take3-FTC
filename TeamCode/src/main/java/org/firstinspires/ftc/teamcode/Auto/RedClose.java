@@ -19,11 +19,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous(name = "Red Close")
 public class RedClose extends OpMode {
-    CRServo intakeS;
-    Servo outake;
-    DcMotorEx rightShooter, leftShooter;
-    DcMotor intake;
-    DistanceSensor sensorDistance;
+    private CRServo intakeServo;
+    private Servo outtakeServo;
+    private DcMotorEx rightShooter, leftShooter;
+    private DcMotorEx intake;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
@@ -48,16 +47,15 @@ public class RedClose extends OpMode {
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
-        intake = hardwareMap.get(DcMotor.class, "intake");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
         follower = Constants.createFollower(hardwareMap);
-        outake = hardwareMap.get(Servo.class, "outakeS");
-        intakeS = hardwareMap.get(CRServo.class, "intakeS");
-        outake.setPosition(0.7);
-        sensorDistance = hardwareMap.get(DistanceSensor.class, "colorSensor");
+        outtakeServo = hardwareMap.get(Servo.class, "outakeS");
+        intakeServo = hardwareMap.get(CRServo.class, "intakeS");
+        outtakeServo.setPosition(0.7);
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
         leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
         leftShooter.setDirection(DcMotorSimple.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.REVERSE);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
         buildPaths();
         follower.setStartingPose(startPose);
     }
@@ -150,305 +148,218 @@ public class RedClose extends OpMode {
 
     public void autonomousPathUpdate() {
         switch (pathState) {
-            case 0:
+            case 0: // Move to score preload
                 follower.followPath(scorePreload);
                 intake.setPower(1);
                 rightShooter.setVelocity(1125);
                 leftShooter.setVelocity(1125);
-                outake.setPosition(0.18);
+                outtakeServo.setPosition(0.18);
                 setPathState(1);
                 break;
-            case 1:
-                /*
-                 * You could check for
-                 * - Follower State: "if(!follower.isBusy()) {}"
-                 * - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
-                 * - Robot Position: "if(follower.getPose().getX() > 36) {}"
-                 */
 
-                /*
-                 * This case checks the robot's position and will wait until the robot position
-                 * is close (1 inch away) from the scorePose's position
-                 */
+            case 1: // Arrived at score preload, start shake
                 if (!follower.isBusy()) {
-                    /* Score Preload */
-
-                    /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
-                    intakeS.setPower(-0.2);
-
+                    intakeServo.setPower(-0.2);
                     setPathState(21);
                 }
                 break;
-            case 21:
-                /* Shake Out Complete */
+
+            case 21: // Shake out complete, start shake in
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
-                    intakeS.setPower(-0.2); // Keep running
-
+                    intakeServo.setPower(-0.2);
                     setPathState(22);
                 }
                 break;
-            case 22:
-                /* Shake In Complete */
+
+            case 22: // Shake in complete, prepare for feed
                 if (!follower.isBusy()) {
                     setPathState(11);
                 }
                 break;
-            case 11:
-                /* Verify Velocity */
+
+            case 11: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1000) {
-                    intakeS.setPower(1);
+                    intakeServo.setPower(1);
                     setPathState(12);
                 }
                 break;
-            case 12:
-                /* Wait State */
-                if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeS.setPower(-0.2); // Stop feed
 
+            case 12: // Feed complete, move to pickup 1
+                if (pathTimer.getElapsedTimeSeconds() > 3) {
+                    intakeServo.setPower(-0.2);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
-                    /*
-                     * Since this is a pathChain, we can have Pedro hold the end point while we are
-                     * grabbing the sample
-                     */
                     follower.followPath(grabPickup1, true);
                     setPathState(2);
                 }
                 break;
-            case 2:
-                /*
-                 * This case checks the robot's position and will wait until the robot position
-                 * is close (1 inch away) from the pickup1Pose's position
-                 */
-                /*
-                 * This case checks the robot's position and will wait until the robot position
-                 * is close (1 inch away) from the pickup1Pose's position
-                 */
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
 
-                    /* Backup after grab */
+            case 2: // Arrived at pickup 1, grab and move for backup
+                if (!follower.isBusy()) {
                     follower.followPath(moveAfterPickup1, true);
                     intake.setPower(1);
                     setPathState(3);
                 }
                 break;
-            case 3:
-                /* Wait for backup to complete */
+
+            case 3: // Backup complete, move to score
                 if (!follower.isBusy()) {
-                    /*
-                     * Since this is a pathChain, we can have Pedro hold the end point while we are
-                     * scoring the sample
-                     */
                     follower.followPath(scorePickup1, true);
-                    // intakeS.setPower(1); // START REMOVED
                     rightShooter.setVelocity(1125);
                     leftShooter.setVelocity(1125);
-                    outake.setPosition(0.18);
+                    outtakeServo.setPosition(0.18);
                     setPathState(4);
                 }
                 break;
-            case 4:
-                /*
-                 * This case checks the robot's position and will wait until the robot position
-                 * is close (1 inch away) from the scorePose's position
-                 */
+
+            case 4: // Arrived at score, start shake
                 if (!follower.isBusy()) {
-                    /* Score Sample */
-
-                    /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
-                    intakeS.setPower(-0.2);
-
+                    intakeServo.setPower(-0.2);
                     setPathState(23);
                 }
                 break;
-            case 23:
-                /* Shake Out Complete */
+
+            case 23: // Shake out complete, start shake in
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
-                    intakeS.setPower(-0.2); // Keep running
-
+                    intakeServo.setPower(-0.2);
                     setPathState(24);
                 }
                 break;
-            case 24:
-                /* Shake In Complete */
+
+            case 24: // Shake in complete, prepare for feed
                 if (!follower.isBusy()) {
                     setPathState(13);
                 }
                 break;
-            case 13:
-                /* Verify Velocity */
+
+            case 13: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1000) {
-                    intakeS.setPower(1);
+                    intakeServo.setPower(1);
                     setPathState(14);
                 }
                 break;
-            case 14:
-                /* Wait State */
+
+            case 14: // Feed complete, move to pickup 2
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeS.setPower(-0.1); // Stop feed
+                    intakeServo.setPower(-0.1);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
-                    /*
-                     * Since this is a pathChain, we can have Pedro hold the end point while we are
-                     * grabbing the sample
-                     */
                     follower.followPath(grabPickup2, true);
                     setPathState(5);
                 }
                 break;
-            case 5:
-                /*
-                 * This case checks the robot's position and will wait until the robot position
-                 * is close (1 inch away) from the pickup2Pose's position
-                 */
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
 
-                    /* Backup after grab */
+            case 5: // Arrived at pickup 2, grab and move for backup
+                if (!follower.isBusy()) {
                     follower.followPath(moveAfterPickup2, true);
                     intake.setPower(1);
                     setPathState(6);
                 }
                 break;
-            case 6:
-                /* Wait for backup to complete */
+
+            case 6: // Backup complete, move to score
                 if (!follower.isBusy()) {
-                    /*
-                     * Since this is a pathChain, we can have Pedro hold the end point while we are
-                     * scoring the sample
-                     */
                     follower.followPath(scorePickup2, true);
-                    // intakeS.setPower(1); // START REMOVED
                     rightShooter.setVelocity(1125);
                     leftShooter.setVelocity(1125);
-                    outake.setPosition(0.18);
+                    outtakeServo.setPosition(0.18);
                     setPathState(7);
                 }
                 break;
-            case 7:
-                /*
-                 * This case checks the robot's position and will wait until the robot position
-                 * is close (1 inch away) from the scorePose's position
-                 */
+
+            case 7: // Arrived at score, start shake
                 if (!follower.isBusy()) {
-                    /* Score Sample */
-
-                    /* Shake Sequence */
                     follower.followPath(scoreToShake, true);
-                    intakeS.setPower(-0.2);
-
+                    intakeServo.setPower(-0.2);
                     setPathState(25);
                 }
                 break;
-            case 25:
-                /* Shake Out Complete */
+
+            case 25: // Shake out complete, start shake in
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
-                    intakeS.setPower(-0.2); // Keep running
-
+                    intakeServo.setPower(-0.2);
                     setPathState(26);
                 }
                 break;
-            case 26:
-                /* Shake In Complete */
+
+            case 26: // Shake in complete, prepare for feed
                 if (!follower.isBusy()) {
                     setPathState(16);
                 }
                 break;
-            case 16:
-                /* Verify Velocity */
+
+            case 16: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1000) {
-                    intakeS.setPower(1);
+                    intakeServo.setPower(1);
                     setPathState(17);
                 }
                 break;
-            case 17:
-                /* Wait State */
+
+            case 17: // Feed complete, move to pickup 3
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeS.setPower(-0.1); // Stop feed
+                    intakeServo.setPower(-0.1);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
-                    /*
-                     * Since this is a pathChain, we can have Pedro hold the end point while we are
-                     * grabbing the sample
-                     */
                     follower.followPath(grabPickup3, true);
                     setPathState(8);
                 }
                 break;
-            case 8:
-                /*
-                 * This case checks the robot's position and will wait until the robot position
-                 * is close (1 inch away) from the pickup3Pose's position
-                 */
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
 
-                    /* Backup after grab */
+            case 8: // Arrived at pickup 3, grab and move for backup
+                if (!follower.isBusy()) {
                     follower.followPath(moveAfterPickup3, true);
                     intake.setPower(1);
                     setPathState(9);
                 }
                 break;
-            case 9:
-                /* Wait for backup to complete */
+
+            case 9: // Backup complete, move to score
                 if (!follower.isBusy()) {
-                    /*
-                     * Since this is a pathChain, we can have Pedro hold the end point while we are
-                     * scoring the sample
-                     */
                     follower.followPath(scorePickup3, true);
-                    // intakeS.setPower(1); // START REMOVED
                     rightShooter.setVelocity(1125);
                     leftShooter.setVelocity(1125);
-                    outake.setPosition(0.18);
+                    outtakeServo.setPosition(0.18);
                     setPathState(10);
                 }
                 break;
-            case 10:
-                /*
-                 * This case checks the robot's position and will wait until the robot position
-                 * is close (1 inch away) from the scorePose's position
-                 */
-                if (!follower.isBusy()) {
-                    /* Shake Sequence */
-                    follower.followPath(scoreToShake, true);
-                    intakeS.setPower(-0.2);
 
+            case 10: // Arrived at score, start shake
+                if (!follower.isBusy()) {
+                    follower.followPath(scoreToShake, true);
+                    intakeServo.setPower(-0.2);
                     setPathState(27);
                 }
                 break;
-            case 27:
-                /* Shake Out Complete */
+
+            case 27: // Shake out complete, start shake in
                 if (!follower.isBusy()) {
                     follower.followPath(shakeToScore, true);
-                    intakeS.setPower(-0.2); // Keep running
-
+                    intakeServo.setPower(-0.2);
                     setPathState(28);
                 }
                 break;
-            case 28:
-                /* Shake In Complete */
+
+            case 28: // Shake in complete, prepare for feed
                 if (!follower.isBusy()) {
                     setPathState(19);
                 }
                 break;
-            case 19:
-                /* Verify Velocity */
+
+            case 19: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1000) {
-                    intakeS.setPower(1);
+                    intakeServo.setPower(1);
                     setPathState(20);
                 }
                 break;
-            case 20:
-                /* Wait State */
+
+            case 20: // Feed complete, end auto
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeS.setPower(0); // Stop feed
+                    intakeServo.setPower(-0.1);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     setPathState(-1);
@@ -456,6 +367,7 @@ public class RedClose extends OpMode {
                 break;
         }
     }
+
     /**
      * These change the states of the paths and actions. It will also reset the
      * timers of the individual switches
@@ -464,6 +376,7 @@ public class RedClose extends OpMode {
         pathState = pState;
         pathTimer.resetTimer();
     }
+
     /**
      * This is the main loop of the OpMode, it will run repeatedly after clicking
      * "Play".
@@ -479,11 +392,6 @@ public class RedClose extends OpMode {
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
-
-        // Safety Override: If object is within 5cm, reverse intakeS
-        if (sensorDistance.getDistance(DistanceUnit.CM) < 5) {
-            intakeS.setPower(-1);
-        }
 
         telemetry.update();
     }
