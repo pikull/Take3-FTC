@@ -282,6 +282,7 @@ public class goon extends LinearOpMode {
      * Power ranges from MIN_TURN_POWER (0.25) to MAX_TURN_POWER (0.5) based on
      * distance from target
      */
+    /*
     private void autoAlignToTarget() {
         LLResult result = limelight.getLatestResult();
         if (!result.isValid()) {
@@ -317,6 +318,37 @@ public class goon extends LinearOpMode {
         setDrivePowers(0, 0, 0);
         telemetry.addData("Auto-Align", "Target Centered - TX: %.2f", targetX);
         telemetry.update();
+    }
+    */
+
+    private void autoAlignToTarget() {
+        LLResult result = limelight.getLatestResult();
+    
+        if (!result.isValid()) {
+            telemetry.addData("Auto-Align", "No target found");
+            return;
+        }
+    
+        double targetX = result.getTx();
+    
+        // If already aligned, stop rotating
+        if (result.isValid() && Math.abs(targetX) <= ALIGNMENT_TOLERANCE) {
+            setDrivePowers(0, 0, 0);
+            telemetry.addData("Auto-Align", "Aligned");
+            return;
+        }
+    
+        // Proportional turn power
+        double turnPower = calculateProportionalTurnPower(tx);
+    
+        // Turn direction
+        double rotate = (tx > 0) ? turnPower : -turnPower;
+    
+        // Apply ONLY rotation, no forward/strafe
+        setDrivePowers(0, 0, rotate);
+    
+        telemetry.addData("Auto-Align TX", "%.2f", tx);
+        telemetry.addData("Turn Power", "%.2f", rotate);
     }
 
     /**
