@@ -44,11 +44,13 @@ public class FreshGoon extends LinearOpMode {
     private boolean intakePowerToggle = false;
     private double targetArea = 0.0;
     private boolean shooterButtonPressed = false;
-    private enum intakeStatus {
+    private enum IntakeStatus {
         intakeForward,
         intakeReverse,
         intakeOff
     }
+    IntakeStatus intakeStatus = intakeOff;
+
     private boolean isInReverseSequence = false;
     private boolean intervalIncreasing = false;
     private LLResult result;
@@ -217,22 +219,22 @@ public class FreshGoon extends LinearOpMode {
         }
 
         //intake controls
-        if (gamepad1.leftBumperWasReleased() && intakeStatus != intakeForward) {
+        if (gamepad1.leftBumperWasReleased() && intakeStatus != IntakeStatus.intakeForward) {
             intake.setPower(-1);
-            intakeOn = true;
+            intakeStatus = IntakeStatus.intakeForward;
         }
-        else if (gamepad1.leftBumperWasReleased() && intakeStatus != intakeOff){
+        else if (gamepad1.leftBumperWasReleased() && intakeStatus != IntakeStatus.intakeOff){
             intake.setPower(0);
-            intakeOn = false;
+            intakeStatus = IntakeStatus.intakeOff;
         }
         
-        if (gamepad1.leftBumperWasReleased() && intakeStatus != intakeReverse) {
+        if (gamepad1.rightBumperWasReleased() && intakeStatus != IntakeStatus.intakeReverse) {
             intake.setPower(1);
-            intakeOn = true;
+            intakeStatus = IntakeStatus.intakeReverse;
         }
-        else if (gamepad1.leftBumperWasReleased() && intakeStatus != intakeOff){
+        else if (gamepad1.rightBumperWasReleased() && intakeStatus != IntakeStatus.intakeOff){
             intake.setPower(0);
-            intakeOn = false;
+            intakeStatus = IntakeStatus.intakeOff;
         }
     }
 
