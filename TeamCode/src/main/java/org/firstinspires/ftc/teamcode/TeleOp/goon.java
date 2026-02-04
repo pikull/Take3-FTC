@@ -72,8 +72,8 @@ public class goon extends LinearOpMode {
             }
 
             // Intake Reverse (Left Bumper)
-            if (gamepad1.leftBumperWasReleased())
-                intake.setPower(1.0);
+            //if (gamepad1.leftBumperWasReleased())
+            //    intake.setPower(1.0);
             // if(gamepad2.dpad_up){
             // parkRight.setPosition(1);
             // parkLeft.setPosition(1);
@@ -263,7 +263,7 @@ public class goon extends LinearOpMode {
             intake.setPower(0);
         }
         
-        if (gamepad2.rightBumperWasReleased() && (rightShooter.getVelocity()>0&&leftShooter.getVelocity()>500)) {
+        if (gamepad2.rightBumperWasReleased()) {
             rightShooter.setVelocity(1500);
             leftShooter.setVelocity(1500);
         }
