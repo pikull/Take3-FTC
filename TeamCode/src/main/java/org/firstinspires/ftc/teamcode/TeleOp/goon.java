@@ -233,13 +233,9 @@ public class goon extends LinearOpMode {
             autoShoot();
         }
 
-        if (gamepad1.leftBumperWasReleased() && intakeOn == false) {
-            intake.setPower(-1);
-            intakeOn = true;
-        }
-        if (gamepad1.leftBumperWasReleased() && intakeOn == true){
-            intake.setPower(0);
-            intakeOn = false;
+        if (gamepad1.leftBumperWasReleased()) {
+            intakeOn = !intakeOn;
+            intake.setPower(intakeOn ? -1 : 0);
         }
 
 
