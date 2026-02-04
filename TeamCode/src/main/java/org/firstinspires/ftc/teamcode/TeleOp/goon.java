@@ -47,7 +47,7 @@ public class goon extends LinearOpMode {
     // private double peakDistance = 0.0;
     // private boolean isReverseMode = false;
     private boolean shooterButtonPressed = false;
-    private boolean intakeOn == true;
+    private boolean intakeOn = false;
     // New variables for simplified control
     private boolean isInReverseSequence = false;
     private ElapsedTime reverseTimer;
@@ -233,7 +233,7 @@ public class goon extends LinearOpMode {
             autoShoot();
         }
 
-        if (gamepad1.leftBumperWasReleased() && intakeOn == true) {
+        if (gamepad1.leftBumperWasReleased() && intakeOn == false) {
             intake.setPower(-1);
             intakeOn = true;
         }
