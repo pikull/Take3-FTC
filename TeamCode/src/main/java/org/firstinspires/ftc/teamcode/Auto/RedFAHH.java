@@ -48,7 +48,7 @@ public class RedFAHH extends OpMode {
     private Path pickup2To1;
     private Path shootToSecondPrePickup;
     private Path secondPrePickupToSecondPickup;
-    private Path secondPickupTostart;
+    private Path secondPickupToStart;
 
     public void buildPaths() {
         // Start -> Pickup 1
