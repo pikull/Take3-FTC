@@ -290,7 +290,7 @@ public class goon extends LinearOpMode {
         }
         double targetX = result.getTx();
         // Continue aligning while target is not centered (outside tolerance)
-        while (result.isValid() && Math.abs(targetX) > ALIGNMENT_TOLERANCE) {
+        if (result.isValid() && Math.abs(targetX) > ALIGNMENT_TOLERANCE && left_trigger > 0) {
             // Calculate proportional power based on distance from center
             double turnPower = calculateProportionalTurnPower(targetX);
             // Determine turn direction and apply power
