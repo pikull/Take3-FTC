@@ -54,7 +54,7 @@ public class RedClose extends OpMode {
         outake = hardwareMap.get(Servo.class, "outakeS");
         intakeS = hardwareMap.get(CRServo.class, "intakeS");
         outake.setPosition(0.7);
-        saftey = hardwareMap.get(Servo.class, "safety");
+        safety = hardwareMap.get(Servo.class, "safety");
         safety.setPosition(0.2);
         sensorDistance = hardwareMap.get(DistanceSensor.class, "colorSensor");
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");

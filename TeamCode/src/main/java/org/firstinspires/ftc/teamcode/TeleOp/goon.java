@@ -219,7 +219,7 @@ public class goon extends LinearOpMode {
         rightBack.setPower(backRightPower);
 
         // Auto-Align to Target (Y Button)
-        if (gamepad1.left_triggerWasReleased())
+        if (gamepad1.left_trigger>0)
             autoAlignToTarget();
         // if(gamepad2.y){
         // if(result.isValid()&&result.getTx()!=0){
@@ -228,17 +228,15 @@ public class goon extends LinearOpMode {
         // }
 
         // Auto-Shoot (X Button)
-        if (gamepad1.right_trigger) {
+        if (gamepad1.right_trigger>0) {
             autoShoot();
         }
 
-        if (gamepad1.left_bumperWasReleased() && intakeOn == false) {
+        if (gamepad1.leftBumperWasReleased() && intake.getPower()<0.1) {
             intake.setPower(1);
-            intakeOn = true;
         }
-        elif (gamepad1.left_bumperWasReleased() && intakeOn == true) {
+       if (gamepad1.leftBumperWasReleased() && intake.getPower() > 0){
             intake.setPower(0);
-            intakeOn = true;
         }
 
 
@@ -266,12 +264,12 @@ public class goon extends LinearOpMode {
             intake.setPower(0);
         }
         
-        if (gamepad2.right_bumperWasPressed() && isShooting == false) {
+        if (gamepad2.rightBumperWasReleased() && (rightShooter.getVelocity()>0&&leftShooter.getVelocity()>500)) {
             rightShooter.setVelocity(1500);
             leftShooter.setVelocity(1500);
         }
 
-        if (gamepad2.left_bumperWasPressed()) {
+        if (gamepad2.leftBumperWasReleased()&&(rightShooter.getVelocity()>500&&leftShooter.getVelocity()>500)) {
             rightShooter.setVelocity(-1500);
             leftShooter.setVelocity(-1500);
             intake.setPower(-1);
