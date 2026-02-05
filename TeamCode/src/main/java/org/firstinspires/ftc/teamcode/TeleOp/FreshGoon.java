@@ -216,26 +216,37 @@ public class FreshGoon extends LinearOpMode {
         // Auto-Shoot (right trigger)
         if (gamepad1.right_trigger>0) {
             autoShoot();
+            if (gamepad1.right_trigger=0) {
+                rightShooter.setVelocity(0);
+                leftShooter.setVelocity(0);
+                intake.setPower(0);
+                intakeServo.setPower (0);
+            }
         }
+        
         telemetry.addData("inake Stat: ", intakeStatus);
         //intake controls
         if (gamepad1.rightBumperWasReleased()) {
             if (intakeStatus != IntakeStatus.intakeOff){
                 intake.setPower(0);
+                intakeServo.setPower (0);
                 intakeStatus = IntakeStatus.intakeOff;
             }
             else {
                 intake.setPower(-1);
+                intakeServo.setPower (0);
                 intakeStatus = IntakeStatus.intakeForward;
             }
         }
         if (gamepad1.leftBumperWasReleased()) {
             if (intakeStatus != IntakeStatus.intakeOff){
                 intake.setPower(0);
+                intakeServo.setPower (0);
                 intakeStatus = IntakeStatus.intakeOff;
             }
             else {
                 intake.setPower(1);
+                intakeServo.setPower (-1);
                 intakeStatus = IntakeStatus.intakeForward;
             }
         }
@@ -252,13 +263,13 @@ public class FreshGoon extends LinearOpMode {
             intakeServo.setPower (0);
         }
         
-        if (gamepad2.rightBumperWasReleased() && (rightShooter.getVelocity()>0&&leftShooter.getVelocity()>00)) {
+        if (gamepad2.rightBumperWasReleased()) {
             rightShooter.setVelocity(1500);
             leftShooter.setVelocity(1500);
 
         }
 
-        if (gamepad2.leftBumperWasReleased()&&(rightShooter.getVelocity()>500&&leftShooter.getVelocity()>500)) {
+        if (gamepad2.leftBumperWasReleased()) {
             rightShooter.setVelocity(-1500);
             leftShooter.setVelocity(-1500);
             intake.setPower(-1);
