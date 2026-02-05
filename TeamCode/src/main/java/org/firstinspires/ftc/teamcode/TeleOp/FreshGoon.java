@@ -33,7 +33,7 @@ public class FreshGoon extends LinearOpMode {
     private static final int FAR_SHOT_VELOCITY = 1500;
     private static final int CLOSE_SHOT_VELOCITY = 1118;
     private static final double OUTAKE_POSITION = 0.288;
-    private static final double OUTAKE_FAR_POSITION = 0.27;
+    private static final double OUTAKE_FAR_POSITION = 0.5;
     private static final double MIN_TURN_POWER = 0.25;
     private static final double MAX_TURN_POWER = 0.5;
     private static final double DISTANCE_THRESHOLD = 70.0;
@@ -49,7 +49,7 @@ public class FreshGoon extends LinearOpMode {
         intakeReverse,
         intakeOff
     }
-    IntakeStatus intakeStatus = intakeOff;
+    IntakeStatus intakeStatus = IntakeStatus.intakeOff;
 
     private boolean isInReverseSequence = false;
     private boolean intervalIncreasing = false;
@@ -107,7 +107,7 @@ public class FreshGoon extends LinearOpMode {
         // Configure Motor Directions
         rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
         rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftShooter.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Configure Encoders
@@ -217,25 +217,29 @@ public class FreshGoon extends LinearOpMode {
         if (gamepad1.right_trigger>0) {
             autoShoot();
         }
-
+        telemetry.addData("inake Stat: ", intakeStatus);
         //intake controls
-        if (gamepad1.leftBumperWasReleased() && intakeStatus != IntakeStatus.intakeForward) {
-            intake.setPower(-1);
-            intakeStatus = IntakeStatus.intakeForward;
+        if (gamepad1.rightBumperWasReleased()) {
+            if (intakeStatus != IntakeStatus.intakeOff){
+                intake.setPower(0);
+                intakeStatus = IntakeStatus.intakeOff;
+            }
+            else {
+                intake.setPower(-1);
+                intakeStatus = IntakeStatus.intakeForward;
+            }
         }
-        else if (gamepad1.leftBumperWasReleased() && intakeStatus != IntakeStatus.intakeOff){
-            intake.setPower(0);
-            intakeStatus = IntakeStatus.intakeOff;
+        if (gamepad1.leftBumperWasReleased()) {
+            if (intakeStatus != IntakeStatus.intakeOff){
+                intake.setPower(0);
+                intakeStatus = IntakeStatus.intakeOff;
+            }
+            else {
+                intake.setPower(1);
+                intakeStatus = IntakeStatus.intakeForward;
+            }
         }
-        
-        if (gamepad1.rightBumperWasReleased() && intakeStatus != IntakeStatus.intakeReverse) {
-            intake.setPower(1);
-            intakeStatus = IntakeStatus.intakeReverse;
-        }
-        else if (gamepad1.rightBumperWasReleased() && intakeStatus != IntakeStatus.intakeOff){
-            intake.setPower(0);
-            intakeStatus = IntakeStatus.intakeOff;
-        }
+        telemetry.update();
     }
 
 
@@ -248,9 +252,10 @@ public class FreshGoon extends LinearOpMode {
             intakeServo.setPower (0);
         }
         
-        if (gamepad2.rightBumperWasReleased() && (rightShooter.getVelocity()>0&&leftShooter.getVelocity()>500)) {
+        if (gamepad2.rightBumperWasReleased() && (rightShooter.getVelocity()>0&&leftShooter.getVelocity()>00)) {
             rightShooter.setVelocity(1500);
             leftShooter.setVelocity(1500);
+
         }
 
         if (gamepad2.leftBumperWasReleased()&&(rightShooter.getVelocity()>500&&leftShooter.getVelocity()>500)) {

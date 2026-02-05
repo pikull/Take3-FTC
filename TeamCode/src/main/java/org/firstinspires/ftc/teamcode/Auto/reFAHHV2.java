@@ -253,7 +253,7 @@ public class reFAHHV2 extends OpMode {
                     safety.setPosition(0.2);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
-                    intake.setPower(0);
+                    intake.setPower(1);
                     intakeServo.setPower(0);
                     setPathState(-1);
                 }
