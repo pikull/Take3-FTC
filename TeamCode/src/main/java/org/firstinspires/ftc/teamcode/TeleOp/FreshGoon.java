@@ -279,15 +279,13 @@ public class FreshGoon extends LinearOpMode {
             intakeServo.setPower(0);
         }
 
-        if (gamepad2.rightBumperWasReleased() && (rightShooter.getVelocity() > 0 && leftShooter.getVelocity() > 00)) {
-        
         if (gamepad2.rightBumperWasReleased()) {
             rightShooter.setVelocity(1500);
             leftShooter.setVelocity(1500);
 
         }
 
-        if (gamepad2.leftBumperWasReleased()&&(rightShooter.getVelocity()>500&&leftShooter.getVelocity()>500)) {
+        if (gamepad2.leftBumperWasReleased()) {
             rightShooter.setVelocity(-1500);
             leftShooter.setVelocity(-1500);
             intake.setPower(-1);
