@@ -20,17 +20,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Autonomous(name = "Red Close")
 public class RedClose extends OpMode {
     private CRServo intakeServo;
-    private Servo outtakeServo;
+    private Servo outtakeServo, safety;
     private DcMotorEx rightShooter, leftShooter;
     private DcMotorEx intake;
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private final Pose startPose = new Pose(109.56521739130434, 109.35652173913039, Math.toRadians(45)); // Start Pose
+    private final Pose startPose = new Pose(118.56521739130434, 118.35652173913039, Math.toRadians(45)); // Start Pose
                                                                                                          // of our
                                                                                                          // robot.
-    private final Pose scorePose = new Pose(92.93913043478265, 86, Math.toRadians(65)); // Scoring Pose
-    private final Pose scoreShakePose = new Pose(92.93913043478265 - 3, 86 - 3, Math.toRadians(65)); // Shake// Pose
+    private final Pose scorePose = new Pose(92.93913043478265, 86, Math.toRadians(45)); // Scoring Pose
+    private final Pose scoreShakePose = new Pose(92.93913043478265 - 3, 86 - 3, Math.toRadians(45)); // Shake// Pose
     private final Pose pickup1Pose = new Pose(92.4521739130435, 84.62608695652175, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(92.4521739130435, 63, Math.toRadians(0));
     private final Pose pickup3Pose = new Pose(92.4521739130435, 40, Math.toRadians(0));
@@ -51,10 +51,18 @@ public class RedClose extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         outtakeServo = hardwareMap.get(Servo.class, "outakeS");
         intakeServo = hardwareMap.get(CRServo.class, "intakeS");
+        safety = hardwareMap.get(Servo.class, "safety");
+
         outtakeServo.setPosition(0.7);
+        safety.setPosition(0.2);
+
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
         leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
-        leftShooter.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        rightShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
         buildPaths();
         follower.setStartingPose(startPose);
@@ -151,54 +159,55 @@ public class RedClose extends OpMode {
             case 0: // Move to score preload
                 follower.followPath(scorePreload);
                 intake.setPower(1);
-                rightShooter.setVelocity(1125);
-                leftShooter.setVelocity(1125);
-                outtakeServo.setPosition(0.18);
+                rightShooter.setVelocity(1175);
+                leftShooter.setVelocity(1175);
+                outtakeServo.setPosition(0.7);
                 setPathState(1);
                 break;
 
-            case 1: // Arrived at score preload, start shake
-                if (!follower.isBusy()) {
-                    follower.followPath(scoreToShake, true);
-                    intakeServo.setPower(-0.2);
-                    setPathState(21);
-                }
-                break;
-
-            case 21: // Shake out complete, start shake in
-                if (!follower.isBusy()) {
-                    follower.followPath(shakeToScore, true);
-                    intakeServo.setPower(-0.2);
-                    setPathState(22);
-                }
-                break;
-
-            case 22: // Shake in complete, prepare for feed
+            case 1: // Arrived at score preload
                 if (!follower.isBusy()) {
                     setPathState(11);
                 }
                 break;
 
             case 11: // Verify velocity before feed
-                if (rightShooter.getVelocity() > 1000) {
+                if (Math.abs(rightShooter.getVelocity() - 1175) <20) {
+                    safety.setPosition(0.5);
+                    setPathState(110);
+                }
+                break;
+
+            case 110: // Safety open delay
+                if (Math.abs(rightShooter.getVelocity() - 1175) >=20) {
+                    safety.setPosition(0.2);
+                    setPathState(11);
+                }
+                if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
+                    intake.setPower(1);
                     setPathState(12);
                 }
                 break;
 
             case 12: // Feed complete, move to pickup 1
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeServo.setPower(-0.2);
+                    safety.setPosition(0.2);
+                    intakeServo.setPower(0);
+                    intake.setPower(0);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     follower.followPath(grabPickup1, true);
+                    follower.setMaxPower(1);
                     setPathState(2);
                 }
                 break;
 
             case 2: // Arrived at pickup 1, grab and move for backup
                 if (!follower.isBusy()) {
+                    follower.setMaxPower(0.5);
                     follower.followPath(moveAfterPickup1, true);
+
                     intake.setPower(1);
                     setPathState(3);
                 }
@@ -206,49 +215,49 @@ public class RedClose extends OpMode {
 
             case 3: // Backup complete, move to score
                 if (!follower.isBusy()) {
+                    follower.setMaxPower(1);
                     follower.followPath(scorePickup1, true);
-                    rightShooter.setVelocity(1125);
-                    leftShooter.setVelocity(1125);
-                    outtakeServo.setPosition(0.18);
+                    rightShooter.setVelocity(1175);
+                    leftShooter.setVelocity(1175);
+                    outtakeServo.setPosition(0.7);
                     setPathState(4);
                 }
                 break;
 
-            case 4: // Arrived at score, start shake
-                if (!follower.isBusy()) {
-                    follower.followPath(scoreToShake, true);
-                    intakeServo.setPower(-0.2);
-                    setPathState(23);
-                }
-                break;
-
-            case 23: // Shake out complete, start shake in
-                if (!follower.isBusy()) {
-                    follower.followPath(shakeToScore, true);
-                    intakeServo.setPower(-0.2);
-                    setPathState(24);
-                }
-                break;
-
-            case 24: // Shake in complete, prepare for feed
+            case 4: // Arrived at score
                 if (!follower.isBusy()) {
                     setPathState(13);
                 }
                 break;
 
             case 13: // Verify velocity before feed
-                if (rightShooter.getVelocity() > 1000) {
+                if (Math.abs(rightShooter.getVelocity() - 1175) <20) {
+                    safety.setPosition(0.5);
+                    setPathState(130);
+                }
+                break;
+
+            case 130: // Safety open delay
+                if (Math.abs(rightShooter.getVelocity() - 1175) >=20) {
+                    safety.setPosition(0.2);
+                    setPathState(13);
+                }
+                if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
+                    intake.setPower(1);
                     setPathState(14);
                 }
                 break;
 
             case 14: // Feed complete, move to pickup 2
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeServo.setPower(-0.1);
+                    safety.setPosition(0.2);
+                    intakeServo.setPower(0);
+                    intake.setPower(0);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     follower.followPath(grabPickup2, true);
+                    follower.setMaxPower(1);
                     setPathState(5);
                 }
                 break;
@@ -256,6 +265,7 @@ public class RedClose extends OpMode {
             case 5: // Arrived at pickup 2, grab and move for backup
                 if (!follower.isBusy()) {
                     follower.followPath(moveAfterPickup2, true);
+                    follower.setMaxPower(0.5);
                     intake.setPower(1);
                     setPathState(6);
                 }
@@ -263,56 +273,59 @@ public class RedClose extends OpMode {
 
             case 6: // Backup complete, move to score
                 if (!follower.isBusy()) {
+                    follower.setMaxPower(1);
                     follower.followPath(scorePickup2, true);
-                    rightShooter.setVelocity(1125);
-                    leftShooter.setVelocity(1125);
-                    outtakeServo.setPosition(0.18);
+                    rightShooter.setVelocity(1175);
+                    leftShooter.setVelocity(1175);
+                    outtakeServo.setPosition(0.7);
                     setPathState(7);
                 }
                 break;
 
-            case 7: // Arrived at score, start shake
-                if (!follower.isBusy()) {
-                    follower.followPath(scoreToShake, true);
-                    intakeServo.setPower(-0.2);
-                    setPathState(25);
-                }
-                break;
-
-            case 25: // Shake out complete, start shake in
-                if (!follower.isBusy()) {
-                    follower.followPath(shakeToScore, true);
-                    intakeServo.setPower(-0.2);
-                    setPathState(26);
-                }
-                break;
-
-            case 26: // Shake in complete, prepare for feed
+            case 7: // Arrived at score
                 if (!follower.isBusy()) {
                     setPathState(16);
                 }
                 break;
 
             case 16: // Verify velocity before feed
-                if (rightShooter.getVelocity() > 1000) {
+                if (Math.abs(rightShooter.getVelocity() - 1175) <20) {
+                    safety.setPosition(0.5);
+                    setPathState(160);
+                }
+                break;
+
+            case 160: // Safety open delay
+                if (Math.abs(rightShooter.getVelocity() - 1175) >=20) {
+                    safety.setPosition(0.2);
+                    setPathState(16);
+                }
+                if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
+                    intake.setPower(1);
                     setPathState(17);
                 }
                 break;
 
             case 17: // Feed complete, move to pickup 3
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeServo.setPower(-0.1);
+                    safety.setPosition(0.2);
+                    intakeServo.setPower(0);
+                    intake.setPower(0);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
+                    follower.setMaxPower(1);
                     follower.followPath(grabPickup3, true);
+
                     setPathState(8);
                 }
                 break;
 
             case 8: // Arrived at pickup 3, grab and move for backup
                 if (!follower.isBusy()) {
+                    follower.setMaxPower(0.5);
                     follower.followPath(moveAfterPickup3, true);
+                    // follower.setMaxPower(1);
                     intake.setPower(1);
                     setPathState(9);
                 }
@@ -320,46 +333,45 @@ public class RedClose extends OpMode {
 
             case 9: // Backup complete, move to score
                 if (!follower.isBusy()) {
+                    follower.setMaxPower(1);
                     follower.followPath(scorePickup3, true);
-                    rightShooter.setVelocity(1125);
-                    leftShooter.setVelocity(1125);
-                    outtakeServo.setPosition(0.18);
+                    rightShooter.setVelocity(1175);
+                    leftShooter.setVelocity(1175);
+                    outtakeServo.setPosition(0.7);
                     setPathState(10);
                 }
                 break;
 
-            case 10: // Arrived at score, start shake
-                if (!follower.isBusy()) {
-                    follower.followPath(scoreToShake, true);
-                    intakeServo.setPower(-0.2);
-                    setPathState(27);
-                }
-                break;
-
-            case 27: // Shake out complete, start shake in
-                if (!follower.isBusy()) {
-                    follower.followPath(shakeToScore, true);
-                    intakeServo.setPower(-0.2);
-                    setPathState(28);
-                }
-                break;
-
-            case 28: // Shake in complete, prepare for feed
+            case 10: // Arrived at score
                 if (!follower.isBusy()) {
                     setPathState(19);
                 }
                 break;
 
             case 19: // Verify velocity before feed
-                if (rightShooter.getVelocity() > 1000) {
+                if (Math.abs(rightShooter.getVelocity() - 1175) <20) {
+                    safety.setPosition(0.5);
+                    setPathState(190);
+                }
+                break;
+
+            case 190: // Safety open delay
+                if (Math.abs(rightShooter.getVelocity() - 1175) >=20) {
+                    safety.setPosition(0.2);
+                    setPathState(19);
+                }
+                if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
+                    intake.setPower(1);
                     setPathState(20);
                 }
                 break;
 
             case 20: // Feed complete, end auto
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    intakeServo.setPower(-0.1);
+                    safety.setPosition(0.2);
+                    intakeServo.setPower(0);
+                    intake.setPower(0);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     setPathState(-1);
