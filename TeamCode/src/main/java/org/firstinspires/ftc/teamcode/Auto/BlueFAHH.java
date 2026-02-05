@@ -61,15 +61,6 @@ public class BlueFAHH extends OpMode {
         return new Pose(pose.getX(), mirroredY, mirroredHeading);
     }
 
-    public void init() {
-        if (gamepad1.x) {
-          MIRROR = true;
-        }
-        elif (gamepad1.y) {
-          MIRROR = false;
-        }
-    }
-
     public void buildPaths() {
         // 1. Start -> Forward 15
         startToForward = new Path(new BezierLine(startPose, forward15Pose));
