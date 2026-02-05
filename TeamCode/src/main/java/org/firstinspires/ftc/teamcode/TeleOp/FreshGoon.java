@@ -18,7 +18,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name="Fresh Goon Teleop")
+@TeleOp(name = "Fresh Goon Teleop")
 public class FreshGoon extends LinearOpMode {
     // hardware components
     private DcMotor leftFront, leftBack, rightFront, rightBack;
@@ -30,9 +30,9 @@ public class FreshGoon extends LinearOpMode {
     private Follower follower;
 
     // constants
-    private static final int FAR_SHOT_VELOCITY = 1500;
-    private static final int CLOSE_SHOT_VELOCITY = 1118;
-    private static final double OUTAKE_POSITION = 0.288;
+    private static final int FAR_SHOT_VELOCITY = 1700;
+    private static final int CLOSE_SHOT_VELOCITY = 1218;
+    private static final double OUTAKE_POSITION = 0.488;
     private static final double OUTAKE_FAR_POSITION = 0.5;
     private static final double MIN_TURN_POWER = 0.25;
     private static final double MAX_TURN_POWER = 0.5;
@@ -44,11 +44,13 @@ public class FreshGoon extends LinearOpMode {
     private boolean intakePowerToggle = false;
     private double targetArea = 0.0;
     private boolean shooterButtonPressed = false;
+
     private enum IntakeStatus {
         intakeForward,
         intakeReverse,
         intakeOff
     }
+
     IntakeStatus intakeStatus = IntakeStatus.intakeOff;
 
     private boolean isInReverseSequence = false;
@@ -61,20 +63,23 @@ public class FreshGoon extends LinearOpMode {
     private ElapsedTime shooterButtonTimer = new ElapsedTime();
     private ElapsedTime reverseTimer = new ElapsedTime();
     private ElapsedTime intervalTimer = new ElapsedTime();
+    private ElapsedTime shootingDelayTimer = new ElapsedTime();
 
+    private boolean wasShooterRunning = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
         initializeHardware();
         configureLimelight();
-        
+
         telemetry.addData("Status", "Initialized - Ready to Start");
         telemetry.update();
 
         waitForStart();
-        if (isStopRequested()) return;
-        
-        while(opModeIsActive()) {
+        if (isStopRequested())
+            return;
+
+        while (opModeIsActive()) {
             if (gamepad1.right_bumper) {
                 intake.setPower(-1);
             }
@@ -99,7 +104,7 @@ public class FreshGoon extends LinearOpMode {
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
         leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
         // Intake System
-        intake = hardwareMap.get(DcMotorEx.class,"intake");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
         safety = hardwareMap.servo.get("safety");
         outakeServo = hardwareMap.servo.get("outakeS");
         intakeServo = hardwareMap.get(CRServo.class, "intakeS");
@@ -129,11 +134,11 @@ public class FreshGoon extends LinearOpMode {
         shooterButtonTimer.reset();
         reverseTimer.reset();
         intervalTimer.reset();
+        shootingDelayTimer.reset();
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(0, 0, 0));
     }
-
 
     // configure limelight settings
     private void configureLimelight() {
@@ -165,17 +170,32 @@ public class FreshGoon extends LinearOpMode {
         boolean isShooting = Math.abs(rightShooter.getVelocity()) > 500 || Math.abs(leftShooter.getVelocity()) > 500;
 
         if (isShooting) {
-            handleGamepad1Controls(0.5);
-            safety.setPosition(.5);
-            intake.setPower(1);
-            if(gamepad1.right_bumper){
-                intake.setPower(0);
+            if (!wasShooterRunning) {
+                shootingDelayTimer.reset();
             }
-            intakeServo.setPower(1);
+            wasShooterRunning = true;
+
+            handleGamepad1Controls(0.5);
+
+            if (calcDistance.getDistance(targetArea)>80&&(rightShooter.getVelocity() > 1400 && leftShooter.getVelocity() > 1400)) {
+                safety.setPosition(.5);
+                intake.setPower(1);
+                if (gamepad1.right_bumper) {
+                    intake.setPower(0);
+                }
+                intakeServo.setPower(1);
+            }
+            else if (calcDistance.getDistance(targetArea)>60&&(rightShooter.getVelocity() > 700 && leftShooter.getVelocity() > 700)) {
+            } else {
+                safety.setPosition(0.2);
+                intake.setPower(0);
+                intakeServo.setPower(0);
+            }
         } else {
+            wasShooterRunning = false;
             safety.setPosition(0.2);
 
-            if(intake.getVelocity()<80&&intakeTimer.milliseconds()>2000) {
+            if (intake.getVelocity() < 80 && intakeTimer.milliseconds() > 2000) {
                 intake.setPower(0);
             }
             intakeTimer.reset();
@@ -188,7 +208,6 @@ public class FreshGoon extends LinearOpMode {
         }
         telemetry.update();
     }
-
 
     // gamepad 1 controls
     private void handleGamepad1Controls(double power) {
@@ -210,11 +229,11 @@ public class FreshGoon extends LinearOpMode {
         rightBack.setPower(backRightPower);
 
         // Auto-Align to Target (left trigger)
-        if (gamepad1.left_trigger>0)
+        if (gamepad1.left_trigger > 0)
             autoAlignToTarget();
 
         // Auto-Shoot (right trigger)
-        if (gamepad1.right_trigger>0) {
+        if (gamepad1.right_trigger > 0) {
             autoShoot();
             if (gamepad1.right_trigger=0) {
                 rightShooter.setVelocity(0);
@@ -225,26 +244,24 @@ public class FreshGoon extends LinearOpMode {
         }
         
         telemetry.addData("inake Stat: ", intakeStatus);
-        //intake controls
+        // intake controls
         if (gamepad1.rightBumperWasReleased()) {
-            if (intakeStatus != IntakeStatus.intakeOff){
+            if (intakeStatus != IntakeStatus.intakeOff) {
                 intake.setPower(0);
                 intakeServo.setPower (0);
                 intakeStatus = IntakeStatus.intakeOff;
-            }
-            else {
+            } else {
                 intake.setPower(-1);
                 intakeServo.setPower (0);
                 intakeStatus = IntakeStatus.intakeForward;
             }
         }
         if (gamepad1.leftBumperWasReleased()) {
-            if (intakeStatus != IntakeStatus.intakeOff){
+            if (intakeStatus != IntakeStatus.intakeOff) {
                 intake.setPower(0);
                 intakeServo.setPower (0);
                 intakeStatus = IntakeStatus.intakeOff;
-            }
-            else {
+            } else {
                 intake.setPower(1);
                 intakeServo.setPower (-1);
                 intakeStatus = IntakeStatus.intakeForward;
@@ -253,15 +270,16 @@ public class FreshGoon extends LinearOpMode {
         telemetry.update();
     }
 
-
     // gamepad 2 controls
     private void handleGamepad2Controls() {
         if (gamepad2.a) {
             rightShooter.setVelocity(0);
             leftShooter.setVelocity(0);
             intake.setPower(0);
-            intakeServo.setPower (0);
+            intakeServo.setPower(0);
         }
+
+        if (gamepad2.rightBumperWasReleased() && (rightShooter.getVelocity() > 0 && leftShooter.getVelocity() > 00)) {
         
         if (gamepad2.rightBumperWasReleased()) {
             rightShooter.setVelocity(1500);
@@ -269,14 +287,13 @@ public class FreshGoon extends LinearOpMode {
 
         }
 
-        if (gamepad2.leftBumperWasReleased()) {
+        if (gamepad2.leftBumperWasReleased()&&(rightShooter.getVelocity()>500&&leftShooter.getVelocity()>500)) {
             rightShooter.setVelocity(-1500);
             leftShooter.setVelocity(-1500);
             intake.setPower(-1);
             intakeServo.setPower(-1);
         }
     }
-
 
     // auto-align to target using limelight
     // with proportional power control
@@ -319,7 +336,6 @@ public class FreshGoon extends LinearOpMode {
         telemetry.update();
     }
 
-
     // auto shoot based on target distance
     private void autoShoot() {
         LLResult result = limelight.getLatestResult();
@@ -351,9 +367,8 @@ public class FreshGoon extends LinearOpMode {
                 && leftShooter.getVelocity() > CLOSE_SHOT_VELOCITY - 100) {
             intakeServo.setPower(1.0);
         }
-        
-    }
 
+    }
 
     // set motor powers for mecanum drive
     private void setDrivePowers(double forward, double strafe, double rotate) {
@@ -363,7 +378,6 @@ public class FreshGoon extends LinearOpMode {
         rightFront.setPower((forward - strafe - rotate) / denominator);
         rightBack.setPower((forward + strafe - rotate) / denominator);
     }
-
 
     /**
      * Calculate proportional turn power based on distance from target center
@@ -375,7 +389,8 @@ public class FreshGoon extends LinearOpMode {
         double distanceFromCenter = Math.abs(targetX);
         // Normalize distance to 0-1 range (30 degrees is considered maximum distance)
         double normalizedDistance = Math.min(distanceFromCenter / 30.0, 1.0);
-        // Calculate proportional power: closer to center = lower power, further = higher power
+        // Calculate proportional power: closer to center = lower power, further =
+        // higher power
         return MIN_TURN_POWER + (normalizedDistance * (MAX_TURN_POWER - MIN_TURN_POWER));
     }
 }
