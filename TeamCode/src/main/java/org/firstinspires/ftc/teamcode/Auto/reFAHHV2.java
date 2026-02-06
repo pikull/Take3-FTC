@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -29,9 +30,12 @@ public class reFAHHV2 extends OpMode {
     private DcMotorEx intake;
     private Servo outtakeServo, safety;
     private CRServo intakeServo;
-
+    public static double SHOOTER_P = 100.0;
+    public static double SHOOTER_I = 20.0;
+    public static double SHOOTER_D = 0.0;
+    public static double SHOOTER_F = 1/2000;
     // Poses
-    private final Pose startPose = new Pose(75.8335724533716, 7.173601147776184, Math.toRadians(90));
+    private final Pose startPose = new Pose(75.8335724533716, 3.173601147776184, Math.toRadians(90));
     private final Pose forward15Pose = new Pose(75.8335724533716, 7.173601147776184 + 15, Math.toRadians(90));
     private final Pose shoot1Pose = new Pose(75.8335724533716, 12.173601147776184, Math.toRadians(70));
     private final Pose pickup1Pose = new Pose(75.8335724533716, 27.173601147776184, Math.toRadians(90));
@@ -128,7 +132,7 @@ public class reFAHHV2 extends OpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
-                    outtakeServo.setPosition(0.5);
+                    outtakeServo.setPosition(0.6);
                     actionTimer.resetTimer();
                     setPathState(12);
                 }
@@ -194,7 +198,7 @@ public class reFAHHV2 extends OpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
-                    outtakeServo.setPosition(0.5);
+                    outtakeServo.setPosition(0.6);
                     actionTimer.resetTimer();
                     setPathState(15);
                 }
@@ -205,9 +209,9 @@ public class reFAHHV2 extends OpMode {
                     safety.setPosition(0.2);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
-                    intake.setPower(0);
-                    intakeServo.setPower(0);
-                    follower.setMaxPower(0.5);
+                    intake.setPower(1);
+                    intakeServo.setPower(1);
+                    follower.setMaxPower(1);
                     follower.followPath(grabPickup3, true);
                     setPathState(6);
                 }
@@ -215,8 +219,8 @@ public class reFAHHV2 extends OpMode {
 
             case 6: // Arrive at Pickup 3, move to score
                 if (!follower.isBusy()) {
-                    intake.setPower(0);
-                    intakeServo.setPower(0);
+                    intakeServo.setPower(1);
+                    intake.setPower(1);
                     follower.setMaxPower(1.0);
                     follower.followPath(scorePickup3, true);
                     setPathState(7);
@@ -242,7 +246,7 @@ public class reFAHHV2 extends OpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
-                    outtakeServo.setPosition(0.5);
+                    outtakeServo.setPosition(0.6);
                     actionTimer.resetTimer();
                     setPathState(17);
                 }
@@ -300,10 +304,13 @@ public class reFAHHV2 extends OpMode {
 
         safety = hardwareMap.get(Servo.class, "safety");
         safety.setPosition(0.2);
+        PIDFCoefficients pidf = new PIDFCoefficients(SHOOTER_P, SHOOTER_I, SHOOTER_D, SHOOTER_F);
 
         // Directions
         rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
+        leftShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
 
         follower = Constants.createFollower(hardwareMap);
         buildPaths();

@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -26,10 +27,10 @@ public class RedClose extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private final Pose startPose = new Pose(118.56521739130434, 118.35652173913039, Math.toRadians(45)); // Start Pose
-                                                                                                         // of our
+    private final Pose startPose = new Pose(118.56521739130434, 118.35652173913039, Math.toRadians(45)); // Start Pose//
+                                                                                                         // of our//
                                                                                                          // robot.
-    private final Pose scorePose = new Pose(92.93913043478265, 86, Math.toRadians(45)); // Scoring Pose
+    private final Pose scorePose = new Pose(92.93913043478265, 86, Math.toRadians(48)); // Scoring Pose
     private final Pose scoreShakePose = new Pose(92.93913043478265 - 3, 86 - 3, Math.toRadians(45)); // Shake// Pose
     private final Pose pickup1Pose = new Pose(92.4521739130435, 84.62608695652175, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(92.4521739130435, 63, Math.toRadians(0));
@@ -39,7 +40,15 @@ public class RedClose extends OpMode {
     private final Pose moveAfterPickup3Pose = new Pose(105.25217391304349 + 20, 36.208695652173915, Math.toRadians(0));
     private Path scorePreload;
     private PathChain grabPickup1, moveAfterPickup1, scorePickup1, grabPickup2, moveAfterPickup2, scorePickup2,
-            grabPickup3, moveAfterPickup3, scorePickup3, scoreToShake, shakeToScore;
+            grabPickup3, moveAfterPickup3, scorePickup3, scoreToShake, shakeToScore, park;
+
+    private final Pose parkPose = new Pose(scorePose.getX(), scorePose.getY() - 15.4, Math.toRadians(48));
+
+    // PIDF Coefficients
+    public static double SHOOTER_P = 60.0;
+    public static double SHOOTER_I = 20.0;
+    public static double SHOOTER_D = 0.0;
+    public static double SHOOTER_F = 14.0;
 
     /** This method is called once at the init of the OpMode. **/
     @Override
@@ -61,6 +70,10 @@ public class RedClose extends OpMode {
 
         rightShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        PIDFCoefficients pidf = new PIDFCoefficients(SHOOTER_P, SHOOTER_I, SHOOTER_D, SHOOTER_F);
+        rightShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
+        leftShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
 
         rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -152,6 +165,10 @@ public class RedClose extends OpMode {
                 .addPath(new BezierLine(scoreShakePose, scorePose))
                 .setLinearHeadingInterpolation(scoreShakePose.getHeading(), scorePose.getHeading())
                 .build();
+        park = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, parkPose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), parkPose.getHeading())
+                .build();
     }
 
     public void autonomousPathUpdate() {
@@ -161,7 +178,7 @@ public class RedClose extends OpMode {
                 intake.setPower(1);
                 rightShooter.setVelocity(1175);
                 leftShooter.setVelocity(1175);
-                outtakeServo.setPosition(0.7);
+                outtakeServo.setPosition(0.45);
                 setPathState(1);
                 break;
 
@@ -172,17 +189,14 @@ public class RedClose extends OpMode {
                 break;
 
             case 11: // Verify velocity before feed
-                if (Math.abs(rightShooter.getVelocity() - 1175) <20) {
+                if (rightShooter.getVelocity() > 1175) {
                     safety.setPosition(0.5);
                     setPathState(110);
                 }
                 break;
 
             case 110: // Safety open delay
-                if (Math.abs(rightShooter.getVelocity() - 1175) >=20) {
-                    safety.setPosition(0.2);
-                    setPathState(11);
-                }
+
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
@@ -205,7 +219,7 @@ public class RedClose extends OpMode {
 
             case 2: // Arrived at pickup 1, grab and move for backup
                 if (!follower.isBusy()) {
-                    follower.setMaxPower(0.5);
+                    follower.setMaxPower(0.7);
                     follower.followPath(moveAfterPickup1, true);
 
                     intake.setPower(1);
@@ -219,7 +233,7 @@ public class RedClose extends OpMode {
                     follower.followPath(scorePickup1, true);
                     rightShooter.setVelocity(1175);
                     leftShooter.setVelocity(1175);
-                    outtakeServo.setPosition(0.7);
+                    outtakeServo.setPosition(0.45);
                     setPathState(4);
                 }
                 break;
@@ -231,17 +245,14 @@ public class RedClose extends OpMode {
                 break;
 
             case 13: // Verify velocity before feed
-                if (Math.abs(rightShooter.getVelocity() - 1175) <20) {
+                if (rightShooter.getVelocity() > 1175) {
                     safety.setPosition(0.5);
                     setPathState(130);
                 }
                 break;
 
             case 130: // Safety open delay
-                if (Math.abs(rightShooter.getVelocity() - 1175) >=20) {
-                    safety.setPosition(0.2);
-                    setPathState(13);
-                }
+
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
@@ -265,7 +276,7 @@ public class RedClose extends OpMode {
             case 5: // Arrived at pickup 2, grab and move for backup
                 if (!follower.isBusy()) {
                     follower.followPath(moveAfterPickup2, true);
-                    follower.setMaxPower(0.5);
+                    follower.setMaxPower(0.7);
                     intake.setPower(1);
                     setPathState(6);
                 }
@@ -277,7 +288,7 @@ public class RedClose extends OpMode {
                     follower.followPath(scorePickup2, true);
                     rightShooter.setVelocity(1175);
                     leftShooter.setVelocity(1175);
-                    outtakeServo.setPosition(0.7);
+                    outtakeServo.setPosition(0.6);
                     setPathState(7);
                 }
                 break;
@@ -289,17 +300,14 @@ public class RedClose extends OpMode {
                 break;
 
             case 16: // Verify velocity before feed
-                if (Math.abs(rightShooter.getVelocity() - 1175) <20) {
+                if (rightShooter.getVelocity() > 1175) {
                     safety.setPosition(0.5);
                     setPathState(160);
                 }
                 break;
 
             case 160: // Safety open delay
-                if (Math.abs(rightShooter.getVelocity() - 1175) >=20) {
-                    safety.setPosition(0.2);
-                    setPathState(16);
-                }
+
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
@@ -323,7 +331,7 @@ public class RedClose extends OpMode {
 
             case 8: // Arrived at pickup 3, grab and move for backup
                 if (!follower.isBusy()) {
-                    follower.setMaxPower(0.5);
+                    follower.setMaxPower(0.7);
                     follower.followPath(moveAfterPickup3, true);
                     // follower.setMaxPower(1);
                     intake.setPower(1);
@@ -337,7 +345,7 @@ public class RedClose extends OpMode {
                     follower.followPath(scorePickup3, true);
                     rightShooter.setVelocity(1175);
                     leftShooter.setVelocity(1175);
-                    outtakeServo.setPosition(0.7);
+                    outtakeServo.setPosition(0.6);
                     setPathState(10);
                 }
                 break;
@@ -349,17 +357,13 @@ public class RedClose extends OpMode {
                 break;
 
             case 19: // Verify velocity before feed
-                if (Math.abs(rightShooter.getVelocity() - 1175) <20) {
+                if (rightShooter.getVelocity() > 1175) {
                     safety.setPosition(0.5);
                     setPathState(190);
                 }
                 break;
 
             case 190: // Safety open delay
-                if (Math.abs(rightShooter.getVelocity() - 1175) >=20) {
-                    safety.setPosition(0.2);
-                    setPathState(19);
-                }
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
@@ -367,13 +371,21 @@ public class RedClose extends OpMode {
                 }
                 break;
 
-            case 20: // Feed complete, end auto
+            case 20: // Feed complete, move to park
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
                     safety.setPosition(0.2);
                     intakeServo.setPower(0);
                     intake.setPower(0);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
+                    follower.setMaxPower(1);
+                    follower.followPath(park, true);
+                    setPathState(21);
+                }
+                break;
+
+            case 21: // Parking
+                if (!follower.isBusy()) {
                     setPathState(-1);
                 }
                 break;
@@ -404,6 +416,8 @@ public class RedClose extends OpMode {
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("Right Shooter Velocity", rightShooter.getVelocity());
+        telemetry.addData("Left Shooter Velocity", leftShooter.getVelocity());
 
         telemetry.update();
     }

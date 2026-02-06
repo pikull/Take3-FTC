@@ -6,6 +6,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -15,8 +16,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@TeleOp(name = "Fresh Goon Teleop")
-public class FreshGoon extends LinearOpMode {
+
+@TeleOp(name = "Blue Teleop")
+public class FreshGoonRed extends LinearOpMode {
     // Hardware Components
     private DcMotor leftFront, leftBack, rightFront, rightBack;
     private DcMotorEx rightShooter, leftShooter;
@@ -30,7 +32,7 @@ public class FreshGoon extends LinearOpMode {
     // Shooter Constants
     private static final int FAR_SHOT_VELOCITY = 1700;
     private static final int CLOSE_SHOT_VELOCITY = 1218;
-    private static final double OUTAKE_POSITION = 0.1;
+    private static final double OUTAKE_POSITION = 0.3;
     private static final double OUTAKE_FAR_POSITION = 0.45;
     // Alignment Constants
     private static final double MIN_TURN_POWER = 0.25;
@@ -53,7 +55,6 @@ public class FreshGoon extends LinearOpMode {
     }
 
     private IntakeStatus intakeStatus = IntakeStatus.intakeOff;
-
     // --- Timers ---
     private ElapsedTime intakeTimer = new ElapsedTime();
     private ElapsedTime shooterButtonTimer = new ElapsedTime();
@@ -64,6 +65,8 @@ public class FreshGoon extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         initializeHardware();
+
+        configureLimelight();
 
         telemetry.addData("Status", "Initialized - Ready to Start");
         // Initial update removed to match user request
@@ -83,7 +86,6 @@ public class FreshGoon extends LinearOpMode {
 
             telemetry.update();
         }
-        configureLimelight();
     }
 
     // --- Initialization ---
@@ -138,17 +140,8 @@ public class FreshGoon extends LinearOpMode {
         limelight = hardwareMap.get(Limelight3A.class, "Limelight");
         // Pipeline switching controls (kept for init selection if neededpod)
         limelight.start();
-        while(!opModeIsActive()) {
-        if (gamepad1.dpad_up) {
-            limelight.pipelineSwitch(0);
-            new calcDistance(0);
-        }
-        if (gamepad1.dpad_down) {
-            limelight.pipelineSwitch(2);
-            new calcDistance(2);
-        }
-
-    }
+        limelight.pipelineSwitch(0);
+        new calcDistance(0);
     }
 
     // --- Drive System ---
@@ -303,6 +296,7 @@ public class FreshGoon extends LinearOpMode {
             boolean velocityReached = Math.abs(rightShooter.getVelocity()) >= targetShooterVelocity - 225
                     && targetShooterVelocity > 0;
 
+
             if (velocityReached) {
                 safety.setPosition(.5);
                 intake.setPower(1);
@@ -310,13 +304,13 @@ public class FreshGoon extends LinearOpMode {
                     intake.setPower(0); // Driver override
                 intakeServo.setPower(1);
             } else {
-                safety.setPosition(0.2);
+                safety.setPosition(0.33);
                 intake.setPower(0);
                 intakeServo.setPower(0);
             }
         } else {
             wasShooterRunning = false;
-            safety.setPosition(0.2);
+            safety.setPosition(0.33);
 
             // Ball jam/clearing logic
             if (intake.getVelocity() < 80 && intakeTimer.milliseconds() > 2000) {
