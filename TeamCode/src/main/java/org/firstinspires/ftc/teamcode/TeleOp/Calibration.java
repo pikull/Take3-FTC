@@ -72,8 +72,8 @@ public class Calibration extends LinearOpMode {
 
     private void initHardware() {
 
-        leftShooter  = hardwareMap.get(DcMotorEx.class, "leftShooter");
-        rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
+        leftShooter  = hardwareMap.get(DcMotor.class, "leftShooter");
+        rightShooter = hardwareMap.get(DcMotor.class, "rightShooter");
         rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
         outakeServo  = hardwareMap.servo.get("outakeS");
 
