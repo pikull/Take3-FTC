@@ -31,11 +31,11 @@ public class FreshBlueGoon extends LinearOpMode {
     // Shooter Constants
     private static final int FAR_SHOT_VELOCITY = 1700;
     private static final int CLOSE_SHOT_VELOCITY = 1218;
-    private static final double OUTAKE_POSITION = 0.66;
-    private static final double OUTAKE_FAR_POSITION = 0.62;
+    private static final double OUTAKE_POSITION = 0.7;
+    private static final double OUTAKE_FAR_POSITION = 0.65;
     // Alignment Constants
-    private static final double MIN_TURN_POWER = 0.25;
-    private static final double MAX_TURN_POWER = 0.5;
+    private static final double MIN_TURN_POWER = 0.2;
+    private static final double MAX_TURN_POWER = 0.35;
     private static final double DISTANCE_THRESHOLD = 70.0;
     private static final double ALIGNMENT_TOLERANCE = 1.0; // degrees
     // Other
