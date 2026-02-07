@@ -32,10 +32,10 @@ public class FreshRedGoon extends LinearOpMode {
     private static final int FAR_SHOT_VELOCITY = 1700;
     private static final int CLOSE_SHOT_VELOCITY = 1218;
     private static final double OUTAKE_POSITION = 0.6;
-    private static final double OUTAKE_FAR_POSITION = 0.62;
+    private static final double OUTAKE_FAR_POSITION = 0.55;
     // Alignment Constants
-    private static final double MIN_TURN_POWER = 0.25;
-    private static final double MAX_TURN_POWER = 0.5;
+    private static final double MIN_TURN_POWER = 0.1;
+    private static final double MAX_TURN_POWER = 0.35;
     private static final double DISTANCE_THRESHOLD = 70.0;
     private static final double ALIGNMENT_TOLERANCE = 1.0; // degrees
     // Other
@@ -273,7 +273,7 @@ public class FreshRedGoon extends LinearOpMode {
                 intakeStatus = IntakeStatus.intakeOff;
             } else {
                 intake.setPower(1);
-                intakeServo.setPower(-1);
+                intakeServo.setPower(0);
                 intakeStatus = IntakeStatus.intakeForward;
             }
         }
@@ -342,7 +342,7 @@ public class FreshRedGoon extends LinearOpMode {
             rightShooter.setVelocity(-1500);
             leftShooter.setVelocity(-1500);
             intake.setPower(-1);
-            intakeServo.setPower(-1);
+            intakeServo.setPower(0);
         }
 
         // Manual override for shooter-triggered intake servo
