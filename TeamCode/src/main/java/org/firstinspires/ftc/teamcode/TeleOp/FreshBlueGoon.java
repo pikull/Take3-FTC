@@ -16,9 +16,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-
 @TeleOp(name = "Blue Teleop")
-public class FreshGoonBlue extends LinearOpMode {
+public class FreshBlueGoon extends LinearOpMode {
     // Hardware Components
     private DcMotor leftFront, leftBack, rightFront, rightBack;
     private DcMotorEx rightShooter, leftShooter;
