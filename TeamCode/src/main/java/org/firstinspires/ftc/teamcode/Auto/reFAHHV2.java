@@ -30,17 +30,17 @@ public class reFAHHV2 extends OpMode {
     private DcMotorEx intake;
     private Servo outtakeServo, safety;
     private CRServo intakeServo;
-    public static double SHOOTER_P = 100.0;
+    public static double SHOOTER_P = 150.0;
     public static double SHOOTER_I = 20.0;
     public static double SHOOTER_D = 0.0;
     public static double SHOOTER_F = 1 / 2000;
     // Poses
     private final Pose startPose = new Pose(75.8335724533716, 3.173601147776184, Math.toRadians(90));
     private final Pose forward15Pose = new Pose(75.8335724533716, 7.173601147776184 + 15, Math.toRadians(90));
-    private final Pose shoot1Pose = new Pose(75.8335724533716, 12.173601147776184, Math.toRadians(70));
-    private final Pose pickup1Pose = new Pose(75.8335724533716, 27.173601147776184, Math.toRadians(90));
-    private final Pose pickup2Pose = new Pose(127.88665710186517, 50.74175035868005, Math.toRadians(0));
-    private final Pose pickup2PrePose = new Pose(102.88665710186517 - 10, 35.74175035868005, Math.toRadians(0));
+    private final Pose shoot1Pose = new Pose(75.8335724533716, 15, Math.toRadians(70));
+    private final Pose pickup1Pose = new Pose(75.8335724533716, 15.173601147776184, Math.toRadians(90));
+    private final Pose pickup2Pose = new Pose(120.88665710186517, 40, Math.toRadians(0));
+    private final Pose pickup2PrePose = new Pose(102.88665710186517 - 10, 40, Math.toRadians(0));
     private final Pose pickup3Pose = new Pose(137.73601147776185, 10, Math.toRadians(270));
     private final Pose pickup3PrePose = new Pose(137, 35, Math.toRadians(270));
 
@@ -132,7 +132,7 @@ public class reFAHHV2 extends OpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
-                    outtakeServo.setPosition(0.6);
+                    outtakeServo.setPosition(0.5);
                     actionTimer.resetTimer();
                     setPathState(12);
                 }
@@ -146,7 +146,6 @@ public class reFAHHV2 extends OpMode {
                     leftShooter.setVelocity(0);
                     intake.setPower(0);
                     intakeServo.setPower(0);
-                    follower.setMaxPower(0.5);
                     follower.followPath(shootToPickup1);
                     setPathState(1);
                 }
@@ -164,7 +163,9 @@ public class reFAHHV2 extends OpMode {
 
             case 140: // Arrive at Pickup 2 Waypoint, move to Pickup 2
                 if (!follower.isBusy()) {
+                    follower.setMaxPower(0.8);
                     follower.followPath(pickup2PreToPickup2);
+                    follower.setMaxPower(1);
                     setPathState(4);
                 }
                 break;
@@ -173,7 +174,6 @@ public class reFAHHV2 extends OpMode {
                 if (!follower.isBusy()) {
                     intake.setPower(0);
                     intakeServo.setPower(0);
-                    follower.setMaxPower(1.0);
                     follower.followPath(scorePickup2, true);
                     setPathState(5);
                 }
@@ -198,7 +198,7 @@ public class reFAHHV2 extends OpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
-                    outtakeServo.setPosition(0.6);
+                    outtakeServo.setPosition(0.5);
                     actionTimer.resetTimer();
                     setPathState(15);
                 }
@@ -210,9 +210,9 @@ public class reFAHHV2 extends OpMode {
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     intake.setPower(1);
-                    intakeServo.setPower(1);
-                    follower.setMaxPower(1);
+                    follower.setMaxPower(0.6);
                     follower.followPath(grabPickup3, true);
+                    follower.setMaxPower(1);
                     setPathState(6);
                 }
                 break;
@@ -221,7 +221,6 @@ public class reFAHHV2 extends OpMode {
                 if (!follower.isBusy()) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
-                    follower.setMaxPower(1.0);
                     follower.followPath(scorePickup3, true);
                     setPathState(7);
                 }
@@ -235,8 +234,9 @@ public class reFAHHV2 extends OpMode {
                 }
                 break;
 
-            case 16: // Wait for velocity, then open safety
-                if (leftShooter.getVelocity() > 1500 && rightShooter.getVelocity() > 1500) {
+            case 16:
+                pathTimer.resetTimer();// Wait for velocity, then open safety
+                if ((leftShooter.getVelocity() > 1500 && rightShooter.getVelocity() > 1500)||pathTimer.getElapsedTimeSeconds()>0.5) {
                     safety.setPosition(0.1194);
                     setPathState(161);
                 }
@@ -246,7 +246,7 @@ public class reFAHHV2 extends OpMode {
                 if (pathTimer.getElapsedTimeSeconds() > 0.2) {
                     intakeServo.setPower(1);
                     intake.setPower(1);
-                    outtakeServo.setPosition(0.6);
+                    outtakeServo.setPosition(0.5);
                     actionTimer.resetTimer();
                     setPathState(17);
                 }
@@ -259,10 +259,17 @@ public class reFAHHV2 extends OpMode {
                     leftShooter.setVelocity(0);
                     intake.setPower(1);
                     intakeServo.setPower(0);
+                    setPathState(200);
+                }
+                break;
+            case 200:
+                if (!follower.isBusy()) {
+                    follower.followPath(startToForward);
                     setPathState(-1);
                 }
                 break;
         }
+
     }
 
     public void setPathState(int pState) {
@@ -273,6 +280,8 @@ public class reFAHHV2 extends OpMode {
     @Override
     public void loop() {
         follower.update();
+        follower.setMaxPower(1.0);
+
         autonomousPathUpdate();
 
         telemetry.addData("leftShooter velocity", leftShooter.getVelocity());

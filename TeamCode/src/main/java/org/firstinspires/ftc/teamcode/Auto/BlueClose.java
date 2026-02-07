@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@Autonomous(name = "Red Close")
+@Autonomous(name = "Blue Close")
 public class BlueClose extends OpMode {
     private CRServo intakeServo;
     private Servo outtakeServo, safety;
@@ -27,22 +27,17 @@ public class BlueClose extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private final Pose startPose = new Pose(144 - 118.56521739130434, 118.35652173913039, Math.toRadians(135)); // Start
-                                                                                                                // Pose//
+    private final Pose startPose = new Pose(144-118.56521739130434, 118.35652173913039, Math.toRadians(180-45)); // Start Pose//
     // of our//
     // robot.
-    private final Pose scorePose = new Pose((144 - 92.93913043478265), 86, Math.toRadians(132)); // Scoring Pose
-    private final Pose scoreShakePose = new Pose((144 - 92.93913043478265) + 3, 86 + 3, Math.toRadians(135)); // Shake//
-                                                                                                              // Pose
-    private final Pose pickup1Pose = new Pose((144 - 92.4521739130435), 84.62608695652175, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose((144 - 92.4521739130435), 63, Math.toRadians(0));
-    private final Pose pickup3Pose = new Pose((144 - 92.4521739130435), 40, Math.toRadians(0));
-    private final Pose moveAfterPickup1Pose = new Pose((144 - 103.54782608695652) - 20, 84.62608695652175,
-            Math.toRadians(0));
-    private final Pose moveAfterPickup2Pose = new Pose((144 - 100.86956521739131) - 20, 58.95652173913044,
-            Math.toRadians(0));
-    private final Pose moveAfterPickup3Pose = new Pose((144 - 105.25217391304349) - 20, 36.208695652173915,
-            Math.toRadians(0));
+    private final Pose scorePose = new Pose(144-92.93913043478265, 86, Math.toRadians(180-48)); // Scoring Pose
+    private final Pose scoreShakePose = new Pose(144-92.93913043478265 - 3, 86 - 3, Math.toRadians(180-45)); // Shake// Pose
+    private final Pose pickup1Pose = new Pose(144-92.4521739130435, 84.62608695652175, Math.toRadians(180));
+    private final Pose pickup2Pose = new Pose(144-92.4521739130435, 63, Math.toRadians(180));
+    private final Pose pickup3Pose = new Pose(144-92.4521739130435, 40, Math.toRadians(180));
+    private final Pose moveAfterPickup1Pose = new Pose((144-103.54782608695652) - 20, 84.62608695652175, Math.toRadians(180));
+    private final Pose moveAfterPickup2Pose = new Pose((144-100.86956521739131)- 20, 58.95652173913044, Math.toRadians(180));
+    private final Pose moveAfterPickup3Pose = new Pose((144-105.25217391304349) -17, 36.208695652173915, Math.toRadians(180));
     private Path scorePreload;
     private PathChain grabPickup1, moveAfterPickup1, scorePickup1, grabPickup2, moveAfterPickup2, scorePickup2,
             grabPickup3, moveAfterPickup3, scorePickup3, scoreToShake, shakeToScore, park;

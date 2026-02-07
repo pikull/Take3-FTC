@@ -12,17 +12,14 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "Blue FAHHH (can toggle)", group = "Autonomous")
+@Autonomous(name = "reFAHHV2", group = "Autonomous")
 public class BlueFAHH extends OpMode {
 
-    // mirror thing
-    private static final boolean mirrored = true;
-
-    // idk what this does
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
 
@@ -33,18 +30,19 @@ public class BlueFAHH extends OpMode {
     private DcMotorEx intake;
     private Servo outtakeServo, safety;
     private CRServo intakeServo;
-
+    public static double SHOOTER_P = 150.0;
+    public static double SHOOTER_I = 20.0;
+    public static double SHOOTER_D = 0.0;
+    public static double SHOOTER_F = 1 / 2000;
     // Poses
-    private final Pose startPose = mirrorPose(new Pose(75.8335724533716, 7.173601147776184, Math.toRadians(90)));
-    private final Pose forward15Pose = mirrorPose(
-            new Pose(75.8335724533716, 7.173601147776184 + 15, Math.toRadians(90)));
-    private final Pose shoot1Pose = mirrorPose(new Pose(75.8335724533716, 12.173601147776184, Math.toRadians(70)));
-    private final Pose pickup1Pose = mirrorPose(new Pose(75.8335724533716, 27.173601147776184, Math.toRadians(90)));
-    private final Pose pickup2PrePose = mirrorPose(
-            new Pose(102.88665710186517 - 10, 35.74175035868005, Math.toRadians(0)));
-    private final Pose pickup2Pose = mirrorPose(new Pose(127.88665710186517, 45.74175035868005, Math.toRadians(0)));
-    private final Pose pickup3PrePose = mirrorPose(new Pose(140.73601147776185, 35, Math.toRadians(270)));
-    private final Pose pickup3Pose = mirrorPose(new Pose(140.73601147776185, 10, Math.toRadians(270)));
+    private final Pose startPose = new Pose(144-75.8335724533716, 3.173601147776184, Math.toRadians(270));
+    private final Pose forward15Pose = new Pose(144-75.8335724533716, 7.173601147776184 + 15, Math.toRadians(270));
+    private final Pose shoot1Pose = new Pose(144-75.8335724533716, 15, Math.toRadians(180-70));
+    private final Pose pickup1Pose = new Pose(144-75.8335724533716, 15.173601147776184, Math.toRadians(270));
+    private final Pose pickup2Pose = new Pose(144-120.88665710186517, 40, Math.toRadians(180));
+    private final Pose pickup2PrePose = new Pose(144-102.88665710186517 + 10, 40, Math.toRadians(180));
+    private final Pose pickup3Pose = new Pose(144-137.73601147776185, 10, Math.toRadians(90));
+    private final Pose pickup3PrePose = new Pose(144-137, 35, Math.toRadians(90));
 
     // Paths
     private Path startToForward;
@@ -53,16 +51,6 @@ public class BlueFAHH extends OpMode {
     private Path pickup1ToPickup2Pre;
     private Path pickup2PreToPickup2;
     private PathChain scorePickup2, grabPickup3, scorePickup3;
-
-    private Pose mirrorPose(Pose pose) {
-        if (!mirrored)
-            return pose;
-
-        double mirroredY = 144 - pose.getY();
-        double mirroredHeading = Math.PI - pose.getHeading();
-
-        return new Pose(pose.getX(), mirroredY, mirroredHeading);
-    }
 
     public void buildPaths() {
         // 1. Start -> Forward 15
@@ -134,7 +122,7 @@ public class BlueFAHH extends OpMode {
                 break;
 
             case 11: // Wait for velocity, then open safety
-                if (leftShooter.getVelocity() > 1450 && rightShooter.getVelocity() > 1450) {
+                if (leftShooter.getVelocity() > 1500 && rightShooter.getVelocity() > 1500) {
                     safety.setPosition(0.1194);
                     setPathState(110);
                 }
@@ -151,14 +139,13 @@ public class BlueFAHH extends OpMode {
                 break;
 
             case 12: // Wait for shot to clear (2s), keep intake running, then shutdown and move to
-                     // pickup 1
+                // pickup 1
                 if (pathTimer.getElapsedTimeSeconds() > 2.0) {
                     safety.setPosition(0.0194);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     intake.setPower(0);
                     intakeServo.setPower(0);
-                    follower.setMaxPower(0.5);
                     follower.followPath(shootToPickup1);
                     setPathState(1);
                 }
@@ -176,7 +163,9 @@ public class BlueFAHH extends OpMode {
 
             case 140: // Arrive at Pickup 2 Waypoint, move to Pickup 2
                 if (!follower.isBusy()) {
+                    follower.setMaxPower(0.8);
                     follower.followPath(pickup2PreToPickup2);
+                    follower.setMaxPower(1);
                     setPathState(4);
                 }
                 break;
@@ -185,7 +174,6 @@ public class BlueFAHH extends OpMode {
                 if (!follower.isBusy()) {
                     intake.setPower(0);
                     intakeServo.setPower(0);
-                    follower.setMaxPower(1.0);
                     follower.followPath(scorePickup2, true);
                     setPathState(5);
                 }
@@ -200,7 +188,7 @@ public class BlueFAHH extends OpMode {
                 break;
 
             case 14: // Wait for velocity, then open safety
-                if (leftShooter.getVelocity() > 1450 && rightShooter.getVelocity() > 1450) {
+                if (leftShooter.getVelocity() > 1500 && rightShooter.getVelocity() > 1500) {
                     safety.setPosition(0.1194);
                     setPathState(141);
                 }
@@ -221,19 +209,18 @@ public class BlueFAHH extends OpMode {
                     safety.setPosition(0.0194);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
-                    intake.setPower(0);
-                    intakeServo.setPower(0);
-                    follower.setMaxPower(0.5);
+                    intake.setPower(1);
+                    follower.setMaxPower(0.6);
                     follower.followPath(grabPickup3, true);
+                    follower.setMaxPower(1);
                     setPathState(6);
                 }
                 break;
 
             case 6: // Arrive at Pickup 3, move to score
                 if (!follower.isBusy()) {
-                    intake.setPower(0);
-                    intakeServo.setPower(0);
-                    follower.setMaxPower(1.0);
+                    intakeServo.setPower(1);
+                    intake.setPower(1);
                     follower.followPath(scorePickup3, true);
                     setPathState(7);
                 }
@@ -247,8 +234,9 @@ public class BlueFAHH extends OpMode {
                 }
                 break;
 
-            case 16: // Wait for velocity, then open safety
-                if (leftShooter.getVelocity() > 1450 && rightShooter.getVelocity() > 1450) {
+            case 16:
+                pathTimer.resetTimer();// Wait for velocity, then open safety
+                if ((leftShooter.getVelocity() > 1500 && rightShooter.getVelocity() > 1500)||pathTimer.getElapsedTimeSeconds()>0.5) {
                     safety.setPosition(0.1194);
                     setPathState(161);
                 }
@@ -271,10 +259,17 @@ public class BlueFAHH extends OpMode {
                     leftShooter.setVelocity(0);
                     intake.setPower(1);
                     intakeServo.setPower(0);
+                    setPathState(200);
+                }
+                break;
+            case 200:
+                if (!follower.isBusy()) {
+                    follower.followPath(startToForward);
                     setPathState(-1);
                 }
                 break;
         }
+
     }
 
     public void setPathState(int pState) {
@@ -285,6 +280,8 @@ public class BlueFAHH extends OpMode {
     @Override
     public void loop() {
         follower.update();
+        follower.setMaxPower(1.0);
+
         autonomousPathUpdate();
 
         telemetry.addData("leftShooter velocity", leftShooter.getVelocity());
@@ -316,10 +313,13 @@ public class BlueFAHH extends OpMode {
 
         safety = hardwareMap.get(Servo.class, "safety");
         safety.setPosition(0.0194);
+        PIDFCoefficients pidf = new PIDFCoefficients(SHOOTER_P, SHOOTER_I, SHOOTER_D, SHOOTER_F);
 
         // Directions
         rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
         intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
+        leftShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
 
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
