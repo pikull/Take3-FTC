@@ -5,6 +5,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -17,6 +18,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+@Disabled
 @Autonomous(name = "Red FAHH")
 public class RedFAHH extends OpMode {
 
@@ -91,7 +93,7 @@ public class RedFAHH extends OpMode {
                     leftShooter.setVelocity(1500);
 
                     // Move safety servo out of the way
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
 
                     setPathState(11);
                 }
@@ -156,7 +158,7 @@ public class RedFAHH extends OpMode {
                     // Start Shooters
 
                     // Move safety servo out of the way
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
 
                     // Reset timer so we wait starting from the moment we arrive
 
@@ -248,7 +250,7 @@ public class RedFAHH extends OpMode {
         leftShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         safety = hardwareMap.get(Servo.class, "safety");
-        safety.setPosition(0.2);
+        safety.setPosition(0.0194);
 
         // Directions
         rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);

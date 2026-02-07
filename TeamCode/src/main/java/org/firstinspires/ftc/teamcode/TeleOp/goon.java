@@ -6,6 +6,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -16,7 +17,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-//@TeleOp(name = "Goon Teleop")
+@Disabled
+
+// @TeleOp(name = "Goon Teleop")
 public class goon extends LinearOpMode {
     // Hardware
     // Components//////////////////////////////////////////////////////////////////////////
@@ -183,11 +186,11 @@ public class goon extends LinearOpMode {
         } else {
             // Logic based on shooter status
             if (isShooting && !gamepad1.right_bumper) {
-                safety.setPosition(0.5);
+                safety.setPosition(0.1194);
                 intake.setPower(1.0);
                 intakeServo.setPower(1.0);
             } else {
-                safety.setPosition(0.1);
+                safety.setPosition(0.0194);
                 // Default: spin intake servo negative
                 intakeServo.setPower(-0.2);
 

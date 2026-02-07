@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -10,6 +11,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+
+@Disabled
+
 @TeleOp(name = "Parking")
 public class goonparking extends LinearOpMode {
     // Hardware Components
@@ -36,6 +40,7 @@ public class goonparking extends LinearOpMode {
     private double targetArea = 0;
     private boolean parkEngaged = false;
     private boolean shooting = false;
+
     @Override
     public void runOpMode() throws InterruptedException {
         initializeHardware();
@@ -43,13 +48,15 @@ public class goonparking extends LinearOpMode {
         telemetry.addData("Status", "Initialized - Ready to Start");
         telemetry.update();
         waitForStart();
-        if (isStopRequested()) return;
+        if (isStopRequested())
+            return;
         while (opModeIsActive()) {
             park();
             safety();
         }
-        //sigma
+        // sigma
     }
+
     /**
      * Initialize all hardware components
      */
@@ -73,7 +80,6 @@ public class goonparking extends LinearOpMode {
      * Update Limelight telemetry data
      */
 
-
     /**
      * Handle Gamepad 1 controls (driver controls)
      */
@@ -82,11 +88,9 @@ public class goonparking extends LinearOpMode {
      * Handle Gamepad 2 controls (operator controls)
      */
 
-        // Intake Reverse (Left Bumper)
+    // Intake Reverse (Left Bumper)
 
-        // Auto-Align to Target (Y Button)
-
-
+    // Auto-Align to Target (Y Button)
 
     private void park() {
         if (gamepad1.right_bumper && parkEngaged == false) {
@@ -103,17 +107,17 @@ public class goonparking extends LinearOpMode {
 
     private void safety() {
 
-        if (gamepad1.left_bumper == true && shooting == false){
+        if (gamepad1.left_bumper == true && shooting == false) {
             shooting = true;
         }
-        if (gamepad1.left_bumper == true && shooting == true){
+        if (gamepad1.left_bumper == true && shooting == true) {
             shooting = false;
         }
 
         while (gamepad1.left_bumper) {
-            safety.setPosition(0.5);
+            safety.setPosition(0.1194);
         }
-        safety.setPosition(0);
+        safety.setPosition(0.0194);
     }
-    
+
 }

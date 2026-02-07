@@ -9,7 +9,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 
-@TeleOp(name = "calcDistance")
 public class calcDistance extends LinearOpMode {
     double distance;
     int pipline;

@@ -63,7 +63,7 @@ public class RedClose extends OpMode {
         safety = hardwareMap.get(Servo.class, "safety");
 
         outtakeServo.setPosition(0.7);
-        safety.setPosition(0.2);
+        safety.setPosition(0.0194);
 
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
         leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
@@ -190,7 +190,7 @@ public class RedClose extends OpMode {
 
             case 11: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1175) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(110);
                 }
                 break;
@@ -206,7 +206,7 @@ public class RedClose extends OpMode {
 
             case 12: // Feed complete, move to pickup 1
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     intakeServo.setPower(0);
                     intake.setPower(0);
                     rightShooter.setVelocity(0);
@@ -246,7 +246,7 @@ public class RedClose extends OpMode {
 
             case 13: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1175) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(130);
                 }
                 break;
@@ -262,7 +262,7 @@ public class RedClose extends OpMode {
 
             case 14: // Feed complete, move to pickup 2
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     intakeServo.setPower(0);
                     intake.setPower(0);
                     rightShooter.setVelocity(0);
@@ -301,7 +301,7 @@ public class RedClose extends OpMode {
 
             case 16: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1175) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(160);
                 }
                 break;
@@ -317,7 +317,7 @@ public class RedClose extends OpMode {
 
             case 17: // Feed complete, move to pickup 3
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     intakeServo.setPower(0);
                     intake.setPower(0);
                     rightShooter.setVelocity(0);
@@ -358,7 +358,7 @@ public class RedClose extends OpMode {
 
             case 19: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1175) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(190);
                 }
                 break;
@@ -373,7 +373,7 @@ public class RedClose extends OpMode {
 
             case 20: // Feed complete, move to park
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     intakeServo.setPower(0);
                     intake.setPower(0);
                     rightShooter.setVelocity(0);

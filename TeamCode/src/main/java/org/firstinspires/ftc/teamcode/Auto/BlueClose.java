@@ -27,17 +27,22 @@ public class BlueClose extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-    private final Pose startPose = new Pose(144-118.56521739130434, 118.35652173913039, Math.toRadians(135)); // Start Pose//
+    private final Pose startPose = new Pose(144 - 118.56521739130434, 118.35652173913039, Math.toRadians(135)); // Start
+                                                                                                                // Pose//
     // of our//
     // robot.
-    private final Pose scorePose = new Pose((144-92.93913043478265), 86, Math.toRadians(132)); // Scoring Pose
-    private final Pose scoreShakePose = new Pose((144-92.93913043478265) + 3, 86 + 3, Math.toRadians(135)); // Shake// Pose
-    private final Pose pickup1Pose = new Pose((144-92.4521739130435), 84.62608695652175, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose((144-92.4521739130435), 63, Math.toRadians(0));
-    private final Pose pickup3Pose = new Pose((144-92.4521739130435), 40, Math.toRadians(0));
-    private final Pose moveAfterPickup1Pose = new Pose((144-103.54782608695652) - 20, 84.62608695652175, Math.toRadians(0));
-    private final Pose moveAfterPickup2Pose = new Pose((144-100.86956521739131 )- 20, 58.95652173913044, Math.toRadians(0));
-    private final Pose moveAfterPickup3Pose = new Pose((144-105.25217391304349) - 20, 36.208695652173915, Math.toRadians(0));
+    private final Pose scorePose = new Pose((144 - 92.93913043478265), 86, Math.toRadians(132)); // Scoring Pose
+    private final Pose scoreShakePose = new Pose((144 - 92.93913043478265) + 3, 86 + 3, Math.toRadians(135)); // Shake//
+                                                                                                              // Pose
+    private final Pose pickup1Pose = new Pose((144 - 92.4521739130435), 84.62608695652175, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose((144 - 92.4521739130435), 63, Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose((144 - 92.4521739130435), 40, Math.toRadians(0));
+    private final Pose moveAfterPickup1Pose = new Pose((144 - 103.54782608695652) - 20, 84.62608695652175,
+            Math.toRadians(0));
+    private final Pose moveAfterPickup2Pose = new Pose((144 - 100.86956521739131) - 20, 58.95652173913044,
+            Math.toRadians(0));
+    private final Pose moveAfterPickup3Pose = new Pose((144 - 105.25217391304349) - 20, 36.208695652173915,
+            Math.toRadians(0));
     private Path scorePreload;
     private PathChain grabPickup1, moveAfterPickup1, scorePickup1, grabPickup2, moveAfterPickup2, scorePickup2,
             grabPickup3, moveAfterPickup3, scorePickup3, scoreToShake, shakeToScore, park;
@@ -63,7 +68,7 @@ public class BlueClose extends OpMode {
         safety = hardwareMap.get(Servo.class, "safety");
 
         outtakeServo.setPosition(0.7);
-        safety.setPosition(0.2);
+        safety.setPosition(0.0194);
 
         rightShooter = hardwareMap.get(DcMotorEx.class, "rightShooter");
         leftShooter = hardwareMap.get(DcMotorEx.class, "leftShooter");
@@ -190,7 +195,7 @@ public class BlueClose extends OpMode {
 
             case 11: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1175) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(110);
                 }
                 break;
@@ -206,7 +211,7 @@ public class BlueClose extends OpMode {
 
             case 12: // Feed complete, move to pickup 1
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     intakeServo.setPower(0);
                     intake.setPower(0);
                     rightShooter.setVelocity(0);
@@ -246,7 +251,7 @@ public class BlueClose extends OpMode {
 
             case 13: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1175) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(130);
                 }
                 break;
@@ -262,7 +267,7 @@ public class BlueClose extends OpMode {
 
             case 14: // Feed complete, move to pickup 2
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     intakeServo.setPower(0);
                     intake.setPower(0);
                     rightShooter.setVelocity(0);
@@ -301,7 +306,7 @@ public class BlueClose extends OpMode {
 
             case 16: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1175) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(160);
                 }
                 break;
@@ -317,7 +322,7 @@ public class BlueClose extends OpMode {
 
             case 17: // Feed complete, move to pickup 3
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     intakeServo.setPower(0);
                     intake.setPower(0);
                     rightShooter.setVelocity(0);
@@ -358,7 +363,7 @@ public class BlueClose extends OpMode {
 
             case 19: // Verify velocity before feed
                 if (rightShooter.getVelocity() > 1175) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(190);
                 }
                 break;
@@ -373,7 +378,7 @@ public class BlueClose extends OpMode {
 
             case 20: // Feed complete, move to park
                 if (pathTimer.getElapsedTimeSeconds() > 3) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     intakeServo.setPower(0);
                     intake.setPower(0);
                     rightShooter.setVelocity(0);

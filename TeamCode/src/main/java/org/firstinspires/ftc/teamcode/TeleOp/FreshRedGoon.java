@@ -16,7 +16,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-
 @TeleOp(name = "Red Teleop")
 public class FreshRedGoon extends LinearOpMode {
     // Hardware Components
@@ -32,8 +31,8 @@ public class FreshRedGoon extends LinearOpMode {
     // Shooter Constants
     private static final int FAR_SHOT_VELOCITY = 1700;
     private static final int CLOSE_SHOT_VELOCITY = 1218;
-    private static final double OUTAKE_POSITION = 0.3;
-    private static final double OUTAKE_FAR_POSITION = 0.45;
+    private static final double OUTAKE_POSITION = 0.6;
+    private static final double OUTAKE_FAR_POSITION = 0.62;
     // Alignment Constants
     private static final double MIN_TURN_POWER = 0.25;
     private static final double MAX_TURN_POWER = 0.5;
@@ -173,11 +172,13 @@ public class FreshRedGoon extends LinearOpMode {
         rightFront.setPower((forward - strafe - rotate) / denominator);
         rightBack.setPower((forward + strafe - rotate) / denominator);
     }
+
     private double calculateProportionalTurnPower(double targetX) {
         double distanceFromCenter = Math.abs(targetX);
         double normalizedDistance = Math.min(distanceFromCenter / 30.0, 1.0);
         return MIN_TURN_POWER + (normalizedDistance * (MAX_TURN_POWER - MIN_TURN_POWER));
     }
+
     // --- Limelight & Vision ---
     private void updateLimelight() {
         result = limelight.getLatestResult();
@@ -190,6 +191,7 @@ public class FreshRedGoon extends LinearOpMode {
             telemetry.addData("Target", "Not Found");
         }
     }
+
     private void autoAlignToTarget() {
         if (!result.isValid()) {
             telemetry.addData("Auto-Align", "No target found");
@@ -211,6 +213,7 @@ public class FreshRedGoon extends LinearOpMode {
         }
         setDrivePowers(0, 0, 0);
     }
+
     // --- Shooting System ---
     private void handleShooterControls() {
         if (gamepad1.right_trigger > 0) {
@@ -224,6 +227,7 @@ public class FreshRedGoon extends LinearOpMode {
             intakeServo.setPower(0);
         }
     }
+
     private void autoShoot() {
         if (!result.isValid()) {
             telemetry.addData("Auto-Shoot", "No target found");
@@ -296,21 +300,20 @@ public class FreshRedGoon extends LinearOpMode {
             boolean velocityReached = Math.abs(rightShooter.getVelocity()) >= targetShooterVelocity - 225
                     && targetShooterVelocity > 0;
 
-
             if (velocityReached) {
-                safety.setPosition(.5);
+                safety.setPosition(0.1194);
                 intake.setPower(1);
                 if (gamepad1.right_bumper)
                     intake.setPower(0); // Driver override
                 intakeServo.setPower(1);
             } else {
-                safety.setPosition(0.33);
+                safety.setPosition(0.0194);
                 intake.setPower(0);
                 intakeServo.setPower(0);
             }
         } else {
             wasShooterRunning = false;
-            safety.setPosition(0.33);
+            safety.setPosition(0.0194);
 
             // Ball jam/clearing logic
             if (intake.getVelocity() < 80 && intakeTimer.milliseconds() > 2000) {

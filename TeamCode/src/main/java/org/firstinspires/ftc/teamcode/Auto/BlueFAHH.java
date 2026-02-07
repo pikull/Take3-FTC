@@ -19,10 +19,10 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Autonomous(name = "Blue FAHHH (can toggle)", group = "Autonomous")
 public class BlueFAHH extends OpMode {
 
-    //mirror thing
+    // mirror thing
     private static final boolean mirrored = true;
 
-    //idk what this does
+    // idk what this does
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
 
@@ -36,10 +36,12 @@ public class BlueFAHH extends OpMode {
 
     // Poses
     private final Pose startPose = mirrorPose(new Pose(75.8335724533716, 7.173601147776184, Math.toRadians(90)));
-    private final Pose forward15Pose = mirrorPose(new Pose(75.8335724533716, 7.173601147776184 + 15, Math.toRadians(90)));
+    private final Pose forward15Pose = mirrorPose(
+            new Pose(75.8335724533716, 7.173601147776184 + 15, Math.toRadians(90)));
     private final Pose shoot1Pose = mirrorPose(new Pose(75.8335724533716, 12.173601147776184, Math.toRadians(70)));
     private final Pose pickup1Pose = mirrorPose(new Pose(75.8335724533716, 27.173601147776184, Math.toRadians(90)));
-    private final Pose pickup2PrePose = mirrorPose(new Pose(102.88665710186517 - 10, 35.74175035868005, Math.toRadians(0)));
+    private final Pose pickup2PrePose = mirrorPose(
+            new Pose(102.88665710186517 - 10, 35.74175035868005, Math.toRadians(0)));
     private final Pose pickup2Pose = mirrorPose(new Pose(127.88665710186517, 45.74175035868005, Math.toRadians(0)));
     private final Pose pickup3PrePose = mirrorPose(new Pose(140.73601147776185, 35, Math.toRadians(270)));
     private final Pose pickup3Pose = mirrorPose(new Pose(140.73601147776185, 10, Math.toRadians(270)));
@@ -53,11 +55,12 @@ public class BlueFAHH extends OpMode {
     private PathChain scorePickup2, grabPickup3, scorePickup3;
 
     private Pose mirrorPose(Pose pose) {
-        if (!mirrored) return pose;
-    
+        if (!mirrored)
+            return pose;
+
         double mirroredY = 144 - pose.getY();
         double mirroredHeading = Math.PI - pose.getHeading();
-    
+
         return new Pose(pose.getX(), mirroredY, mirroredHeading);
     }
 
@@ -132,7 +135,7 @@ public class BlueFAHH extends OpMode {
 
             case 11: // Wait for velocity, then open safety
                 if (leftShooter.getVelocity() > 1450 && rightShooter.getVelocity() > 1450) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(110);
                 }
                 break;
@@ -150,7 +153,7 @@ public class BlueFAHH extends OpMode {
             case 12: // Wait for shot to clear (2s), keep intake running, then shutdown and move to
                      // pickup 1
                 if (pathTimer.getElapsedTimeSeconds() > 2.0) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     intake.setPower(0);
@@ -198,7 +201,7 @@ public class BlueFAHH extends OpMode {
 
             case 14: // Wait for velocity, then open safety
                 if (leftShooter.getVelocity() > 1450 && rightShooter.getVelocity() > 1450) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(141);
                 }
                 break;
@@ -215,7 +218,7 @@ public class BlueFAHH extends OpMode {
 
             case 15: // Finish score (2s), keep intake running, then shutdown and move to Pickup 3
                 if (pathTimer.getElapsedTimeSeconds() > 2.0) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     intake.setPower(0);
@@ -246,7 +249,7 @@ public class BlueFAHH extends OpMode {
 
             case 16: // Wait for velocity, then open safety
                 if (leftShooter.getVelocity() > 1450 && rightShooter.getVelocity() > 1450) {
-                    safety.setPosition(0.5);
+                    safety.setPosition(0.1194);
                     setPathState(161);
                 }
                 break;
@@ -263,7 +266,7 @@ public class BlueFAHH extends OpMode {
 
             case 17: // End Auto (2s), keep intake running, then shutdown
                 if (pathTimer.getElapsedTimeSeconds() > 2.0) {
-                    safety.setPosition(0.2);
+                    safety.setPosition(0.0194);
                     rightShooter.setVelocity(0);
                     leftShooter.setVelocity(0);
                     intake.setPower(1);
@@ -312,7 +315,7 @@ public class BlueFAHH extends OpMode {
         leftShooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         safety = hardwareMap.get(Servo.class, "safety");
-        safety.setPosition(0.2);
+        safety.setPosition(0.0194);
 
         // Directions
         rightShooter.setDirection(DcMotorSimple.Direction.REVERSE);
