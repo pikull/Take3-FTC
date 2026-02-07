@@ -178,7 +178,7 @@ public class RedClose extends OpMode {
                 intake.setPower(1);
                 rightShooter.setVelocity(1175);
                 leftShooter.setVelocity(1175);
-                outtakeServo.setPosition(0.45);
+                outtakeServo.setPosition(0.5);
                 setPathState(1);
                 break;
 
@@ -233,7 +233,7 @@ public class RedClose extends OpMode {
                     follower.followPath(scorePickup1, true);
                     rightShooter.setVelocity(1175);
                     leftShooter.setVelocity(1175);
-                    outtakeServo.setPosition(0.45);
+                    outtakeServo.setPosition(0.5);
                     setPathState(4);
                 }
                 break;

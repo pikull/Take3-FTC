@@ -35,8 +35,8 @@ public class BlueClose extends OpMode {
     private final Pose pickup1Pose = new Pose(144-92.4521739130435, 84.62608695652175, Math.toRadians(180));
     private final Pose pickup2Pose = new Pose(144-92.4521739130435, 63, Math.toRadians(180));
     private final Pose pickup3Pose = new Pose(144-92.4521739130435, 40, Math.toRadians(180));
-    private final Pose moveAfterPickup1Pose = new Pose((144-103.54782608695652) - 20, 84.62608695652175, Math.toRadians(180));
-    private final Pose moveAfterPickup2Pose = new Pose((144-100.86956521739131)- 20, 58.95652173913044, Math.toRadians(180));
+    private final Pose moveAfterPickup1Pose = new Pose((144-103.54782608695652) - 13.4, 84.62608695652175, Math.toRadians(180));
+    private final Pose moveAfterPickup2Pose = new Pose((144-100.86956521739131)- 17, 54.95652173913044, Math.toRadians(180));
     private final Pose moveAfterPickup3Pose = new Pose((144-105.25217391304349) -17, 36.208695652173915, Math.toRadians(180));
     private Path scorePreload;
     private PathChain grabPickup1, moveAfterPickup1, scorePickup1, grabPickup2, moveAfterPickup2, scorePickup2,
@@ -176,9 +176,9 @@ public class BlueClose extends OpMode {
             case 0: // Move to score preload
                 follower.followPath(scorePreload);
                 intake.setPower(1);
-                rightShooter.setVelocity(1175);
-                leftShooter.setVelocity(1175);
-                outtakeServo.setPosition(0.45);
+                rightShooter.setVelocity(1120);
+                leftShooter.setVelocity(1120);
+                outtakeServo.setPosition(0.5);
                 setPathState(1);
                 break;
 
@@ -189,7 +189,7 @@ public class BlueClose extends OpMode {
                 break;
 
             case 11: // Verify velocity before feed
-                if (rightShooter.getVelocity() > 1175) {
+                if (rightShooter.getVelocity() > 1120) {
                     safety.setPosition(0.1194);
                     setPathState(110);
                 }
@@ -231,9 +231,9 @@ public class BlueClose extends OpMode {
                 if (!follower.isBusy()) {
                     follower.setMaxPower(1);
                     follower.followPath(scorePickup1, true);
-                    rightShooter.setVelocity(1175);
-                    leftShooter.setVelocity(1175);
-                    outtakeServo.setPosition(0.45);
+                    rightShooter.setVelocity(1120);
+                    leftShooter.setVelocity(1120);
+                    outtakeServo.setPosition(0.5);
                     setPathState(4);
                 }
                 break;
@@ -245,7 +245,7 @@ public class BlueClose extends OpMode {
                 break;
 
             case 13: // Verify velocity before feed
-                if (rightShooter.getVelocity() > 1175) {
+                if (rightShooter.getVelocity() > 1120) {
                     safety.setPosition(0.1194);
                     setPathState(130);
                 }
@@ -286,9 +286,9 @@ public class BlueClose extends OpMode {
                 if (!follower.isBusy()) {
                     follower.setMaxPower(1);
                     follower.followPath(scorePickup2, true);
-                    rightShooter.setVelocity(1175);
-                    leftShooter.setVelocity(1175);
-                    outtakeServo.setPosition(0.6);
+                    rightShooter.setVelocity(1120);
+                    leftShooter.setVelocity(1120);
+                    outtakeServo.setPosition(0.57);
                     setPathState(7);
                 }
                 break;
@@ -300,7 +300,7 @@ public class BlueClose extends OpMode {
                 break;
 
             case 16: // Verify velocity before feed
-                if (rightShooter.getVelocity() > 1175) {
+                if (rightShooter.getVelocity() > 1120) {
                     safety.setPosition(0.1194);
                     setPathState(160);
                 }
@@ -343,9 +343,9 @@ public class BlueClose extends OpMode {
                 if (!follower.isBusy()) {
                     follower.setMaxPower(1);
                     follower.followPath(scorePickup3, true);
-                    rightShooter.setVelocity(1175);
-                    leftShooter.setVelocity(1175);
-                    outtakeServo.setPosition(0.6);
+                    rightShooter.setVelocity(1120);
+                    leftShooter.setVelocity(1120);
+                    outtakeServo.setPosition(0.57);
                     setPathState(10);
                 }
                 break;
@@ -357,7 +357,7 @@ public class BlueClose extends OpMode {
                 break;
 
             case 19: // Verify velocity before feed
-                if (rightShooter.getVelocity() > 1175) {
+                if (rightShooter.getVelocity() > 1120) {
                     safety.setPosition(0.1194);
                     setPathState(190);
                 }

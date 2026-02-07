@@ -7,6 +7,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -26,16 +27,21 @@ public class FreshBlueGoon extends LinearOpMode {
     private CRServo intakeServo;
     private Limelight3A limelight;
     private Follower follower;
+    public static double SHOOTER_P = 100.0;
+    public static double SHOOTER_I = 20.0;
+    public static double SHOOTER_D = 0.0;
+    public static double SHOOTER_F = 14.0;
+    PIDFCoefficients pidf = new PIDFCoefficients(SHOOTER_P, SHOOTER_I, SHOOTER_D, SHOOTER_F);
 
     // --- Constants ---
     // Shooter Constants
-    private static final int FAR_SHOT_VELOCITY = 1700;
+    private static final int FAR_SHOT_VELOCITY = 1550;
     private static final int CLOSE_SHOT_VELOCITY = 1218;
-    private static final double OUTAKE_POSITION = 0.5;
-    private static final double OUTAKE_FAR_POSITION = 0.55;
+    private static final double OUTAKE_POSITION = 0.57;
+    private static final double OUTAKE_FAR_POSITION = 0.5;
     // Alignment Constants
-    private static final double MIN_TURN_POWER = 0.1;
-    private static final double MAX_TURN_POWER = 0.35;
+    private static final double MIN_TURN_POWER = 0.19;
+    private static final double MAX_TURN_POWER = 0.19;
     private static final double DISTANCE_THRESHOLD = 70.0;
     private static final double ALIGNMENT_TOLERANCE = 1.0; // degrees
     // Other
@@ -117,6 +123,8 @@ public class FreshBlueGoon extends LinearOpMode {
         rightShooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intake.setDirection(DcMotorEx.Direction.REVERSE);
+        rightShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
+        leftShooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intake.setPower(0);
@@ -240,8 +248,8 @@ public class FreshBlueGoon extends LinearOpMode {
             targetShooterVelocity = CLOSE_SHOT_VELOCITY;
             outakeServo.setPosition(OUTAKE_POSITION);
         } else if (distance >= DISTANCE_THRESHOLD && distance <= 80) {
-            targetShooterVelocity = 1100;
-            outakeServo.setPosition(OUTAKE_POSITION);
+            targetShooterVelocity = 1300;
+            outakeServo.setPosition(0.56);
         } else {
             targetShooterVelocity = FAR_SHOT_VELOCITY;
             outakeServo.setPosition(OUTAKE_FAR_POSITION);
@@ -342,7 +350,7 @@ public class FreshBlueGoon extends LinearOpMode {
             rightShooter.setVelocity(-1500);
             leftShooter.setVelocity(-1500);
             intake.setPower(-1);
-            intakeServo.setPower(0);
+            intakeServo.setPower(-1);
         }
 
         // Manual override for shooter-triggered intake servo

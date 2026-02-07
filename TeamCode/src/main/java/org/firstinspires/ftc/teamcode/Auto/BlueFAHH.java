@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "reFAHHV2", group = "Autonomous")
+@Autonomous(name = "BlueFAHH", group = "Autonomous")
 public class BlueFAHH extends OpMode {
 
     private Follower follower;
